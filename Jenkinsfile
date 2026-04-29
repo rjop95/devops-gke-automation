@@ -28,16 +28,14 @@ stage('Infrastructure (IaC)') {
             sh 'terraform init'
             
             sh '''
-                # Importar Red y Subred
-                terraform import -var="project_id=devops-interview-poc-123" google_compute_network.main_vpc projects/devops-interview-poc-123/global/networks/devops-vpc || true
-                terraform import -var="project_id=devops-interview-poc-123" google_compute_subnetwork.main_subnet projects/devops-interview-poc-123/regions/us-central1/subnetworks/devops-vpc-subnet || true
-                
-                # Importar Firewall
-                terraform import -var="project_id=devops-interview-poc-123" google_compute_firewall.allow_ssh projects/devops-interview-poc-123/global/firewalls/allow-ssh || true
-                
-                # Importar el Clúster de GKE (Esto es clave)
-                terraform import -var="project_id=devops-interview-poc-123" google_container_cluster.primary projects/devops-interview-poc-123/zones/us-central1-a/clusters/devops-cluster || true
-            '''
+    # Importar Red, Subred y Firewall (Estos ya funcionaron, pero los dejamos por seguridad)
+    terraform import -var="project_id=devops-interview-poc-123" google_compute_network.main_vpc projects/devops-interview-poc-123/global/networks/devops-vpc || true
+    terraform import -var="project_id=devops-interview-poc-123" google_compute_subnetwork.main_subnet projects/devops-interview-poc-123/regions/us-central1/subnetworks/devops-vpc-subnet || true
+    terraform import -var="project_id=devops-interview-poc-123" google_compute_firewall.allow_ssh projects/devops-interview-poc-123/global/firewalls/allow-ssh || true
+    
+    # CORRECCIÓN AQUÍ: Importar el Clúster de GKE con la ruta completa y limpia
+    terraform import -var="project_id=devops-interview-poc-123" google_container_cluster.primary devops-interview-poc-123/us-central1-a/devops-cluster || true
+'''
             
             sh 'terraform apply -auto-approve -var="project_id=devops-interview-poc-123"'
         }
