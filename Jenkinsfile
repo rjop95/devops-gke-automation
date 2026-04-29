@@ -54,18 +54,15 @@ stage('Infrastructure (IaC)') {
             }
         }
 
-        stage('Docker Build') {
+        stage('Build & Push (Cloud Build)') {
             steps {
-                echo "📦 Construyendo Imagen: v${env.BUILD_ID}"
-                // Asegúrate de que la carpeta ./app exista en tu repo
-                sh "docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:v${env.BUILD_ID} ./app"
-            }
-        }
-
-        stage('Push to Artifact Registry') {
-            steps {
-                sh "gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet"
-                sh "docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:v${env.BUILD_ID}"
+                echo '📦 Construyendo y subiendo imagen con Google Cloud Build...'
+                // Usamos la variable de entorno para la versión si la tienes, o dejamos v7
+                sh '''
+                    gcloud builds submit ./app \
+                        --tag us-central1-docker.pkg.dev/devops-interview-poc-123/app-repo/my-app:v7 \
+                        --project=devops-interview-poc-123
+                '''
             }
         }
 
