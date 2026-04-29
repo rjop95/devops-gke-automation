@@ -1,0 +1,52 @@
+---
+- name: "Configuración de Entorno de Trabajo: Networking, Docker y Seguridad"
+  hosts: local
+  become: yes
+  vars:
+    # Definimos los paquetes en una variable para que el código sea más limpio
+    network_tools:
+      - nmap
+      - iperf3
+      - tcpdump
+      - net-tools
+      - curl
+      - iputils-ping
+      - dnsutils
+
+  tasks:
+    - name: "1. Resolver problema de llave GPG de Jenkins (Mantenimiento)"
+      apt_key:
+        url: https://pkg.jenkins.io/debian-stable/jenkins.io-2023.key
+        state: present
+      register: jenkins_key_result
+      ignore_errors: yes
+
+    - name: "2. Actualizar caché de repositorios"
+      apt:
+        update_cache: yes
+        force_apt_get: yes
+      # Si el repositorio de Jenkins sigue dando problemas, ignoramos para que instale lo demás
+      ignore_errors: yes
+
+    - name: "3. Instalar herramientas de Networking"
+      apt:
+        name: "{{ network_tools }}"
+        state: present
+
+    - name: "4. Verificar instalación de Docker"
+      command: docker --version
+      register: docker_check
+      ignore_errors: yes
+      changed_when: false
+
+    - name: "5. Reportar estado de herramientas"
+      debug:
+        msg: 
+          - "Herramientas de red instaladas: OK"
+          - "Resultado de Docker: {{ docker_check.stdout if docker_check.rc == 0 else 'Docker no encontrado' }}"
+
+    - name: "6. Asegurar que el servicio de red esté activo"
+      service:
+        name: networking
+        state: started
+      ignore_errors: yes
