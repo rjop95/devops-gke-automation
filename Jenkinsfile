@@ -67,17 +67,24 @@ stage('Infrastructure (IaC)') {
         }
 
         stage('Deploy to K8s') {
-            steps {
-                echo "☸️ Desplegando en GKE..."
-                sh "gcloud container clusters get-credentials ${CLUSTER} --zone ${ZONE} --project ${PROJECT_ID}"
-                
-                // Actualizamos la imagen en el deployment
-                sh "kubectl set image deployment/mi-app-deployment mi-app-container=${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:v${env.BUILD_ID} -n production"
-                
-                sh "kubectl rollout status deployment/mi-app-deployment -n production"
-            }
-        }
+    steps {
+        echo '☸️ Desplegando en GKE...'
+        sh '''
+            # 1. Conexión al clúster
+            gcloud container clusters get-credentials devops-cluster --zone us-central1-a --project devops-interview-poc-123
+            
+            # 2. Crear o actualizar la estructura base (Deployment, Service, etc.)
+            # Asumiendo que tu archivo está en la carpeta k8s/
+            kubectl apply -f ./k8s/deployment.yaml -n production
+            
+            # 3. Forzar la actualización a la imagen recién construida (v7)
+            kubectl set image deployment/mi-app-deployment mi-app-container=us-central1-docker.pkg.dev/devops-interview-poc-123/app-repo/my-app:v7 -n production
+            
+            # 4. Verificar el estado del despliegue
+            kubectl rollout status deployment/mi-app-deployment -n production
+        '''
     }
+}
 
     post {
         success { echo "✅ ¡Pipeline Exitoso! Infraestructura y App actualizadas." }
