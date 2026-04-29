@@ -84,6 +84,7 @@ stage('Infrastructure (IaC)') {
             kubectl rollout status deployment/mi-app-deployment -n production
         '''
     }
+ }
 }
 
     post {
