@@ -1,0 +1,39 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mi-app-deployment
+spec:
+  replicas: 1 # Bajamos a 1 para asegurar espacio
+  selector:
+    matchLabels:
+      app: mi-app
+  template:
+    metadata:
+      labels:
+        app: mi-app
+    spec:
+      containers:
+      - name: mi-app-container
+        image: us-central1-docker.pkg.dev/devops-interview-poc-123/app-repo/mi-app:v2
+        ports:
+        - containerPort: 8080
+        resources:
+          requests:
+            cpu: "10m"     # Antes era 100m, ahora solo pedimos el 1% de un core
+            memory: "64Mi"  # Bajamos a la mitad
+          limits:
+            cpu: "50m"
+            memory: "128Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mi-app-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: mi-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080

@@ -1,0 +1,54 @@
+# ==========================================
+# Terraform & Infrastructure
+# ==========================================
+.terraform/
+*.tfstate
+*.tfstate.backup
+*.tfvars
+*.tfvars.json
+.terraform.lock.hcl
+
+# Credenciales y Secretos (¡CRÍTICO!)
+*.json
+*.pem
+*.key
+credentials/
+secrets/
+
+# ==========================================
+# Jenkins & CI/CD
+# ==========================================
+jenkins.war
+*.log
+.jenkins/
+war/
+
+# ==========================================
+# Python (Scripts y App)
+# ==========================================
+venv/
+env/
+ENV/
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+.coverage
+htmlcov/
+
+# ==========================================
+# Docker
+# ==========================================
+.docker/
+# Si guardas imágenes locales o dumps, ignóralos aquí
+
+# ==========================================
+# Sistema Operativo y Editores
+# ==========================================
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.bak
