@@ -35,6 +35,8 @@ stage('Infrastructure (IaC)') {
     
     # CORRECCIÓN AQUÍ: Importar el Clúster de GKE con la ruta completa y limpia
     terraform import -var="project_id=devops-interview-poc-123" google_container_cluster.primary devops-interview-poc-123/us-central1-a/devops-cluster || true
+    # 🎯 ÚLTIMA ADICIÓN: Importar el Node Pool
+    terraform import -var="project_id=devops-interview-poc-123" google_container_node_pool.primary_nodes devops-interview-poc-123/us-central1-a/devops-cluster/main-node-pool || true		
 '''
             
             sh 'terraform apply -auto-approve -var="project_id=devops-interview-poc-123"'
