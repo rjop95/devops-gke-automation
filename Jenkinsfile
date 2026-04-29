@@ -26,7 +26,7 @@ pipeline {
                 echo "🏗️ Validando y aplicando cambios en GCP con Terraform..."
                 dir('infra') {
                     sh 'terraform init'
-                    sh 'terraform apply -auto-approve'
+                    sh 'terraform apply -auto-approve -var="project_id=devops-interview-poc-123"'
                 }
             }
         }
