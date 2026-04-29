@@ -2,7 +2,6 @@ pipeline {
     agent any
 
     environment {
-        // --- CONFIGURACIÓN DE GOOGLE CLOUD ---
         PROJECT_ID = 'devops-interview-poc-123'
         REGION     = 'us-central1'
         REPO_NAME  = 'app-repo'
@@ -12,25 +11,47 @@ pipeline {
     }
 
     stages {
-        stage('Audit Environment') {
+        stage('Audit & Prep') {
             steps {
-                echo "🔍 Verificando herramientas en el Host..."
-                sh 'python3 --version'
-                sh 'docker --version'
+                echo "🔍 Verificando herramientas..."
+                sh 'terraform --version'
+                sh 'ansible --version'
                 sh 'gcloud --version'
+            }
+        }
+
+        // --- NUEVA ETAPA: INFRAESTRUCTURA ---
+        stage('Infrastructure (IaC)') {
+            steps {
+                echo "🏗️ Validando y aplicando cambios en GCP con Terraform..."
+                dir('infra') {
+                    sh 'terraform init'
+                    sh 'terraform apply -auto-approve'
+                }
+            }
+        }
+
+        // --- NUEVA ETAPA: CONFIGURACIÓN ---
+        stage('Configuration (Ansible)') {
+            steps {
+                echo "⚙️ Configurando dependencias del clúster..."
+                dir('ansible') {
+                    // Usamos el playbook que creamos hoy para K8s
+                    sh 'ansible-playbook k8s_setup.yml'
+                }
             }
         }
 
         stage('Docker Build') {
             steps {
-                echo "🏗️ Construyendo Imagen: v${env.BUILD_ID}"
+                echo "📦 Construyendo Imagen: v${env.BUILD_ID}"
+                // Asegúrate de que la carpeta ./app exista en tu repo
                 sh "docker build -t ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:v${env.BUILD_ID} ./app"
             }
         }
 
         stage('Push to Artifact Registry') {
             steps {
-                echo "🚀 Subiendo imagen a Google Cloud..."
                 sh "gcloud auth configure-docker ${REGION}-docker.pkg.dev --quiet"
                 sh "docker push ${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:v${env.BUILD_ID}"
             }
@@ -38,27 +59,20 @@ pipeline {
 
         stage('Deploy to K8s') {
             steps {
-                echo "☸️ Actualizando GKE..."
+                echo "☸️ Desplegando en GKE..."
                 sh "gcloud container clusters get-credentials ${CLUSTER} --zone ${ZONE} --project ${PROJECT_ID}"
                 
-                // --- NOMBRE DEL CONTENEDOR CORRECTO: mi-app-container ---
-                sh "kubectl set image deployment/mi-app-deployment mi-app-container=${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:v${env.BUILD_ID}"
+                // Actualizamos la imagen en el deployment
+                sh "kubectl set image deployment/mi-app-deployment mi-app-container=${REGION}-docker.pkg.dev/${PROJECT_ID}/${REPO_NAME}/${IMAGE_NAME}:v${env.BUILD_ID} -n production"
                 
-                sh "kubectl rollout status deployment/mi-app-deployment"
+                sh "kubectl rollout status deployment/mi-app-deployment -n production"
             }
         }
     }
 
     post {
-        success {
-            echo "✅ ¡Pipeline Exitoso! Aplicación desplegada en GKE."
-        }
-        failure {
-            echo "❌ El pipeline falló. Revisa los logs para más detalle."
-        }
-        always {
-            echo "🧹 Limpiando espacio de trabajo..."
-            cleanWs()
-        }
+        success { echo "✅ ¡Pipeline Exitoso! Infraestructura y App actualizadas." }
+        failure { echo "❌ Fallo en el pipeline. Revisa los logs." }
+        always { cleanWs() }
     }
 }
