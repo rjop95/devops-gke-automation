@@ -1,0 +1,60 @@
+---
+- name: "Configuración de Servicios en GKE"
+  hosts: localhost
+  connection: local
+  vars:
+    # Definimos el espacio de nombres para organizar el clúster
+    namespace: "production"
+
+  tasks:
+    - name: "1. Crear namespace de producción"
+      kubernetes.core.k8s:
+        name: "{{ namespace }}"
+        api_version: v1
+        kind: Namespace
+        state: present
+
+    - name: "2. Instalar Helm (binario local)"
+      shell: |
+        curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
+      args:
+        creates: /usr/local/bin/helm
+      become: yes
+
+    - name: "3. Agregar repositorio de Nginx Ingress"
+      kubernetes.core.helm_repository:
+        name: ingress-nginx
+        repo_url: "https://kubernetes.github.io/ingress-nginx"
+
+    - name: "4. Desplegar Ingress Controller con Helm"
+      kubernetes.core.helm:
+        name: ingress-nginx
+        chart_ref: ingress-nginx/ingress-nginx
+        release_namespace: "{{ namespace }}"
+        create_namespace: yes
+        wait: yes
+
+    - name: "5. Desplegar aplicación de prueba (Hello World)"
+      kubernetes.core.k8s:
+        state: present
+        definition:
+          apiVersion: apps/v1
+          kind: Deployment
+          metadata:
+            name: hello-app
+            namespace: "{{ namespace }}"
+          spec:
+            replicas: 2
+            selector:
+              matchLabels:
+                app: hello
+            template:
+              metadata:
+                labels:
+                  app: hello
+              spec:
+                containers:
+                - name: hello-app
+                  image: "us-docker.pkg.dev/google-samples/containers/gke/hello-app:1.0"
+                  ports:
+                  - containerPort: 8080
