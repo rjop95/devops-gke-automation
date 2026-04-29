@@ -21,16 +21,23 @@ pipeline {
         }
 
         // --- NUEVA ETAPA: INFRAESTRUCTURA ---
-        stage('Infrastructure (IaC)') {
-            steps {
-                echo "🏗️ Validando y aplicando cambios en GCP con Terraform..."
-                dir('infra') {
-                    sh 'terraform init'
-                    sh 'terraform apply -auto-approve -var="project_id=devops-interview-poc-123"'
-                }
-            }
+stage('Infrastructure (IaC)') {
+    steps {
+        echo '🏗️ Sincronizando e implementando infraestructura...'
+        dir('infra') {
+            sh 'terraform init'
+            
+            // Paso de "curación": Importa los recursos si ya existen para evitar el error 409
+            sh '''
+                terraform import -var="project_id=devops-interview-poc-123" google_compute_network.main_vpc projects/devops-interview-poc-123/global/networks/devops-vpc || echo "La red no existe o ya está mapeada, continuando..."
+                terraform import -var="project_id=devops-interview-poc-123" google_compute_subnetwork.main_subnet projects/devops-interview-poc-123/regions/us-central1/subnetworks/devops-vpc-subnet || echo "La subred no existe o ya está mapeada, continuando..."
+            '''
+            
+            // Ahora sí, aplica los cambios
+            sh 'terraform apply -auto-approve -var="project_id=devops-interview-poc-123"'
         }
-
+    }
+}
         // --- NUEVA ETAPA: CONFIGURACIÓN ---
         stage('Configuration (Ansible)') {
             steps {
