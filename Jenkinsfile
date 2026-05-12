@@ -97,7 +97,7 @@ pipeline {
     post {
         always {
             echo "Limpiando el espacio de trabajo..."
-            cleanWs()
+           // cleanWs()
         }
         success {
             echo "✅ Pipeline completado exitosamente. Sistema listo para validación Postman."
