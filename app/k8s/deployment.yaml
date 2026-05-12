@@ -2,8 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: mi-app-deployment
+  namespace: production
 spec:
-  replicas: 1 # Bajamos a 1 para asegurar espacio
+  replicas: 2
   selector:
     matchLabels:
       app: mi-app
@@ -14,26 +15,26 @@ spec:
     spec:
       containers:
       - name: mi-app-container
-        image: us-central1-docker.pkg.dev/devops-interview-poc-123/app-repo/mi-app:v2
+        image: us-central1-docker.pkg.dev/YOUR_PROJECT_ID/app-repo/my-app:latest
         ports:
         - containerPort: 8080
+        # L2 Feature: Self-healing via Probes
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 10
+          periodSeconds: 15
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 5
+          periodSeconds: 10
         resources:
-          requests:
-            cpu: "10m"     # Antes era 100m, ahora solo pedimos el 1% de un core
-            memory: "64Mi"  # Bajamos a la mitad
           limits:
-            cpu: "50m"
-            memory: "128Mi"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mi-app-service
-spec:
-  type: LoadBalancer
-  selector:
-    app: mi-app
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 8080
+            cpu: "500m"
+            memory: "512Mi"
+          requests:
+            cpu: "200m"
+            memory: "256Mi"
