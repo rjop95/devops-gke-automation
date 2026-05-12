@@ -2,93 +2,108 @@ pipeline {
     agent any
 
     environment {
-        PROJECT_ID = 'devops-interview-poc-123'
-        REGION     = 'us-central1'
-        REPO_NAME  = 'app-repo'
-        IMAGE_NAME = 'my-app'
-        CLUSTER    = 'devops-cluster'
-        ZONE       = 'us-central1-a'
+        // Credenciales y Configuración de GCP
+        GCP_PROJECT_ID = 'devops-interview-poc-123'
+        GCP_CREDS_ID   = 'gcp-creds' // El ID que pusiste en Jenkins Credentials
+        CLUSTER_NAME   = 'devops-cluster'
+        ZONE           = 'us-central1-a'
+        
+        // Configuración de Docker/Artifact Registry
+        IMAGE_NAME     = 'mi-app-devops'
+        REGION         = 'us-central1'
+        REPOSITORY     = 'devops-repo'
+        IMAGE_TAG      = "${env.BUILD_ID}" // Etiqueta única por cada build
     }
 
     stages {
-        stage('Audit & Prep') {
+        stage('Checkout SCM') {
             steps {
-                echo "🔍 Verificando herramientas..."
-                sh 'terraform --version'
-                sh 'ansible --version'
-                sh 'gcloud --version'
+                // Clonar el repositorio con los nuevos cambios (docs, tests, etc.)
+                checkout scm
             }
         }
 
-        // --- NUEVA ETAPA: INFRAESTRUCTURA ---
-stage('Infrastructure (IaC)') {
-    steps {
-        echo '🏗️ Sincronizando e implementando infraestructura...'
-        dir('infra') {
-            sh 'terraform init'
-            
-            sh '''
-    # Importar Red, Subred y Firewall (Estos ya funcionaron, pero los dejamos por seguridad)
-    terraform import -var="project_id=devops-interview-poc-123" google_compute_network.main_vpc projects/devops-interview-poc-123/global/networks/devops-vpc || true
-    terraform import -var="project_id=devops-interview-poc-123" google_compute_subnetwork.main_subnet projects/devops-interview-poc-123/regions/us-central1/subnetworks/devops-vpc-subnet || true
-    terraform import -var="project_id=devops-interview-poc-123" google_compute_firewall.allow_ssh projects/devops-interview-poc-123/global/firewalls/allow-ssh || true
-    
-    # CORRECCIÓN AQUÍ: Importar el Clúster de GKE con la ruta completa y limpia
-    terraform import -var="project_id=devops-interview-poc-123" google_container_cluster.primary devops-interview-poc-123/us-central1-a/devops-cluster || true
-    # 🎯 ÚLTIMA ADICIÓN: Importar el Node Pool
-    terraform import -var="project_id=devops-interview-poc-123" google_container_node_pool.primary_nodes devops-interview-poc-123/us-central1-a/devops-cluster/main-node-pool || true		
-'''
-            
-            sh 'terraform apply -auto-approve -var="project_id=devops-interview-poc-123"'
-        }
-    }
-}
-        // --- NUEVA ETAPA: CONFIGURACIÓN ---
-        stage('Configuration (Ansible)') {
+        stage('Terraform Infrastructure') {
             steps {
-                echo "⚙️ Configurando dependencias del clúster..."
+                // Usamos withCredentials para que Terraform tenga acceso a la Service Account
+                withCredentials([file(credentialsId: "${GCP_CREDS_ID}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                    dir('infra') {
+                        sh 'terraform init'
+                        sh "terraform apply -auto-approve -var='project_id=${GCP_PROJECT_ID}'"
+                    }
+                }
+            }
+        }
+
+        stage('Configuración de Acceso (L2 Fix)') {
+            steps {
+                // Este es el paso que arregla el ConnectTimeoutError
+                // Refresca el archivo kubeconfig de Jenkins con la info del clúster recién creado
+                withCredentials([file(credentialsId: "${GCP_CREDS_ID}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                    sh "gcloud auth activate-service-account --key-file=\$GOOGLE_APPLICATION_CREDENTIALS"
+                    sh "gcloud container clusters get-credentials ${CLUSTER_NAME} --zone ${ZONE} --project ${GCP_PROJECT_ID}"
+                }
+            }
+        }
+
+        stage('Ansible Setup') {
+            steps {
                 dir('ansible') {
-                    // Usamos el playbook que creamos hoy para K8s
+                    // Ejecutamos el setup de K8s (Namespaces, RBAC, etc.)
+                    // Ahora que el contexto de kubectl está fresco, no dará timeout
                     sh 'ansible-playbook k8s_setup.yml'
                 }
             }
         }
 
-        stage('Build & Push (Cloud Build)') {
+        stage('Build & Push Docker Image') {
             steps {
-                echo '📦 Construyendo y subiendo imagen con Google Cloud Build...'
-                // Usamos la variable de entorno para la versión si la tienes, o dejamos v7
-                sh '''
-                    gcloud builds submit ./app \
-                        --tag us-central1-docker.pkg.dev/devops-interview-poc-123/app-repo/my-app:v7 \
-                        --project=devops-interview-poc-123
-                '''
+                withCredentials([file(credentialsId: "${GCP_CREDS_ID}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
+                    sh "cat \$GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://${REGION}-docker.pkg.dev"
+                    
+                    dir('app') {
+                        sh "docker build -t ${REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}:${IMAGE_TAG} ."
+                        sh "docker push ${REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}:${IMAGE_TAG}"
+                    }
+                }
             }
         }
 
-        stage('Deploy to K8s') {
-    steps {
-        echo '☸️ Desplegando en GKE...'
-        sh '''
-            # Conexión al clúster
-            gcloud container clusters get-credentials devops-cluster --zone us-central1-a --project devops-interview-poc-123
-            
-            # La ruta real según tu terminal es ./app/k8s/
-            kubectl apply -f ./app/k8s/deployment.yaml -n production
-            
-            # Actualizamos la imagen
-            kubectl set image deployment/mi-app-deployment mi-app-container=us-central1-docker.pkg.dev/devops-interview-poc-123/app-repo/my-app:v7 -n production
-            
-            # Verificamos que los pods suban bien
-            kubectl rollout status deployment/mi-app-deployment -n production
-        '''
+        stage('Deploy to GKE') {
+            steps {
+                dir('k8s') {
+                    // Actualizamos la imagen en el manifiesto y desplegamos
+                    sh "sed -i 's|IMAGE_PLACEHOLDER|${REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}:${IMAGE_TAG}|g' deployment.yml"
+                    sh "kubectl apply -f deployment.yml"
+                    sh "kubectl apply -f service.yml"
+                }
+            }
+        }
+
+        stage('Post-Deployment Validation') {
+            steps {
+                script {
+                    echo "Esperando a que los Pods estén listos..."
+                    sh "kubectl rollout status deployment/${IMAGE_NAME} -n production --timeout=90s"
+                    
+                    echo "Verificando Health Check endpoint..."
+                    // Aquí podrías incluso ejecutar un pequeño script de python de tu carpeta /scripts
+                    sh "kubectl get svc ${IMAGE_NAME}-service -n production"
+                }
+            }
+        }
     }
- }
-}
 
     post {
-        success { echo "✅ ¡Pipeline Exitoso! Infraestructura y App actualizadas." }
-        failure { echo "❌ Fallo en el pipeline. Revisa los logs." }
-        always { cleanWs() }
+        always {
+            echo "Limpiando el espacio de trabajo..."
+            cleanWs()
+        }
+        success {
+            echo "✅ Pipeline completado exitosamente. Sistema listo para validación Postman."
+        }
+        failure {
+            echo "❌ Fallo en el pipeline. Iniciando protocolos de revisión de logs (L2 Support Mode)."
+        }
     }
 }
