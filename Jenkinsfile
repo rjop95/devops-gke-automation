@@ -11,7 +11,7 @@ pipeline {
         // Configuración de Docker/Artifact Registry
         IMAGE_NAME     = 'mi-app-devops'
         REGION         = 'us-central1'
-        REPOSITORY     = 'devops-repo'
+        REPOSITORY     = 'app-repo'
         IMAGE_TAG      = "${env.BUILD_ID}" // Etiqueta única por cada build
     }
 
