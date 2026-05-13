@@ -75,7 +75,7 @@ pipeline {
                     // Actualizamos la imagen en el manifiesto y desplegamos
                     sh "sed -i 's|IMAGE_PLACEHOLDER|${REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}:${IMAGE_TAG}|g' deployment.yaml"
                     sh "kubectl apply -f deployment.yaml"
-                    sh "kubectl apply -f service.yml"
+                    // sh "kubectl apply -f service.yml"
                 }
             }
         }

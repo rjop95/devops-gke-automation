@@ -38,3 +38,16 @@ spec:
           requests:
             cpu: "200m"
             memory: "256Mi"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mi-app-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: mi-app-devops  # <--- Asegúrate que esto coincida con el 'labels' de tu deployment
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 3000 # <--- El puerto donde corre tu app (main.py o server.js)
