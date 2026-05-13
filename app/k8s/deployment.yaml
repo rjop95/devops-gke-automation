@@ -4,7 +4,7 @@ metadata:
   name: mi-app-deployment
   namespace: production
 spec:
-  replicas: 2
+  replicas: 1
   selector:
     matchLabels:
       app: mi-app
@@ -19,13 +19,13 @@ spec:
         ports:
         - containerPort: 8080
         # L2 Feature: Self-healing via Probes
-        livenessProbe:
+       # livenessProbe:
           httpGet:
             path: /health
             port: 8080
           initialDelaySeconds: 10
           periodSeconds: 15
-        readinessProbe:
+       # readinessProbe:
           httpGet:
             path: /health
             port: 8080
@@ -33,11 +33,11 @@ spec:
           periodSeconds: 10
         resources:
           limits:
-            cpu: "500m"
-            memory: "512Mi"
+            cpu: "100m"
+            memory: "128Mi"
           requests:
-            cpu: "200m"
-            memory: "256Mi"
+            cpu: "50m"
+            memory: "64Mi"
 ---
 apiVersion: v1
 kind: Service
