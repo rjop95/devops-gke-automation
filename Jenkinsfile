@@ -85,7 +85,7 @@ stage('Post-Deployment Validation') {
         script {
             echo "Esperando a que los Pods estén listos en el namespace production..."
             // Cambiamos 'mi-app-devops' por 'mi-app-deployment'
-            sh 'kubectl rollout status deployment/mi-app-deployment -n production --timeout=90s'
+            sh 'kubectl rollout status deployment/mi-app-deployment -n production --timeout=180s'
         }
     }
 }

@@ -5,6 +5,12 @@ metadata:
   namespace: production
 spec:
   replicas: 1
+# AÑADE ESTO:
+  strategy:
+    type: Recreate 
+  selector:
+    matchLabels:
+      app: mi-app
   selector:
     matchLabels:
       app: mi-app
