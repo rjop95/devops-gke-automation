@@ -15,29 +15,24 @@ spec:
     spec:
       containers:
       - name: mi-app-container
-        image: us-central1-docker.pkg.dev/YOUR_PROJECT_ID/app-repo/my-app:latest
+        # Asegúrate de que esta línea tenga el placeholder para el sed del Jenkinsfile
+        image: us-central1-docker.pkg.dev/devops-interview-poc-123/app-repo/mi-app-devops:IMAGE_PLACEHOLDER
         ports:
         - containerPort: 8080
-        # L2 Feature: Self-healing via Probes
-       # livenessProbe:
-          httpGet:
-            path: /health
-            port: 8080
-          initialDelaySeconds: 10
-          periodSeconds: 15
-       # readinessProbe:
+        # LOS PROBES VAN FUERA DE PORTS
+        readinessProbe:
           httpGet:
             path: /health
             port: 8080
           initialDelaySeconds: 5
           periodSeconds: 10
         resources:
-          limits:
-            cpu: "100m"
-            memory: "128Mi"
           requests:
             cpu: "50m"
             memory: "64Mi"
+          limits:
+            cpu: "100m"
+            memory: "128Mi"
 ---
 apiVersion: v1
 kind: Service
