@@ -83,14 +83,17 @@ pipeline {
 stage('Post-Deployment Validation') {
     steps {
         script {
-            echo "Esperando a que los Pods estén listos en el namespace production..."
-            // Cambiamos 'mi-app-devops' por 'mi-app-deployment'
-            sh 'kubectl rollout status deployment/mi-app-deployment -n production --timeout=180s'
+            try {
+                sh 'kubectl rollout status deployment/mi-app-deployment -n production --timeout=120s'
+            } catch (Exception e) {
+                // Si falla, que nos diga por qué antes de morir
+                sh 'kubectl describe deployment mi-app-deployment -n production'
+                sh 'kubectl get pods -n production'
+                error "El despliegue no se completó a tiempo."
+            }
         }
     }
 }
-    }
-
     post {
         always {
             echo "Limpiando el espacio de trabajo..."
