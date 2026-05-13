@@ -22,7 +22,7 @@ spec:
       containers:
       - name: mi-app-container
         # Asegúrate de que esta línea tenga el placeholder para el sed del Jenkinsfile
-        image: us-central1-docker.pkg.dev/devops-interview-poc-123/app-repo/mi-app-devops:IMAGE_PLACEHOLDER
+        image: IMAGE_PLACEHOLDER
         ports:
         - containerPort: 8080
         # LOS PROBES VAN FUERA DE PORTS
