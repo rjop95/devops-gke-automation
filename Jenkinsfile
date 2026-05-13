@@ -81,29 +81,31 @@ pipeline {
         }
 
 stage('Post-Deployment Validation') {
-    steps {
-        script {
-            try {
-                sh 'kubectl rollout status deployment/mi-app-deployment -n production --timeout=120s'
-            } catch (Exception e) {
-                // Si falla, que nos diga por qué antes de morir
-                sh 'kubectl describe deployment mi-app-deployment -n production'
-                sh 'kubectl get pods -n production'
-                error "El despliegue no se completó a tiempo."
+            steps {
+                script {
+                    try {
+                        echo "Esperando a que los Pods estén listos en el namespace production..."
+                        sh 'kubectl rollout status deployment/mi-app-deployment -n production --timeout=120s'
+                    } catch (Exception e) {
+                        sh 'kubectl get pods -n production'
+                        sh 'kubectl describe deployment mi-app-deployment -n production'
+                        error "Fallo en la validación: El despliegue no se completó."
+                    }
+                }
             }
         }
-    }
-}
+    } // Fin de stages
+
     post {
         always {
             echo "Limpiando el espacio de trabajo..."
-           // cleanWs()
+            deleteDir()
         }
         success {
-            echo "✅ Pipeline completado exitosamente. Sistema listo para validación Postman."
+            echo "✅ ¡Despliegue exitoso!"
         }
         failure {
-            echo "❌ Fallo en el pipeline. Iniciando protocolos de revisión de logs (L2 Support Mode)."
+            echo "❌ Fallo en el pipeline. Iniciando protocolos de revisión de logs."
         }
     }
-}
+} // AQUÍ es donde suele faltar la última llave
