@@ -80,18 +80,15 @@ pipeline {
             }
         }
 
-        stage('Post-Deployment Validation') {
-            steps {
-                script {
-                    echo "Esperando a que los Pods estén listos..."
-                    sh "kubectl rollout status deployment/${IMAGE_NAME} -n production --timeout=90s"
-                    
-                    echo "Verificando Health Check endpoint..."
-                    // Aquí podrías incluso ejecutar un pequeño script de python de tu carpeta /scripts
-                    sh "kubectl get svc ${IMAGE_NAME}-service -n production"
-                }
-            }
+stage('Post-Deployment Validation') {
+    steps {
+        script {
+            echo "Esperando a que los Pods estén listos en el namespace production..."
+            // Cambiamos 'mi-app-devops' por 'mi-app-deployment'
+            sh 'kubectl rollout status deployment/mi-app-deployment -n production --timeout=90s'
         }
+    }
+}
     }
 
     post {
