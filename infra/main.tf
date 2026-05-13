@@ -12,3 +12,10 @@ provider "google" {
   region  = var.region
   zone    = var.zone
 }
+
+resource "google_artifact_registry_repository" "my_repo" {
+  project    = var.project_id
+  location      = "us-central1"
+  repository_id = "app-repo"
+  format        = "DOCKER"
+}
