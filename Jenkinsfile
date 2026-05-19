@@ -70,17 +70,14 @@ pipeline {
         }
 
         stage('Deploy to GKE') {
-            steps {
-                dir('app/k8s') {
-                    // Actualizamos la imagen en el manifiesto y desplegamos
-                    sh "sed -i 's|IMAGE_PLACEHOLDER|${REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}:${IMAGE_TAG}|g' deployment.yaml"
-		    sh 'kubectl apply -f app/k8s/deployment.yaml'
-                    sh 'kubectl apply -f app/k8s/service.yaml'	
-                    //sh "kubectl apply -f deployment.yaml"
-                    //sh "kubectl apply -f service.yml"
-                }
-            }
-        }
+    steps {
+        // 1. Modificamos el archivo usando su ruta absoluta en el workspace
+        sh "sed -i 's|IMAGE_PLACEHOLDER|us-central1-docker.pkg.dev/devops-interview-poc-123/app-repo/mi-app-devops:${BUILD_NUMBER}|g' app/k8s/deployment.yaml"
+        
+        // 2. Aplicamos de golpe toda la carpeta de Kubernetes
+        sh "kubectl apply -f app/k8s/"
+    }
+}
 
 stage('Post-Deployment Validation') {
             steps {
