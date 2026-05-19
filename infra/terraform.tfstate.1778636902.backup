@@ -1,0 +1,980 @@
+{
+  "version": 4,
+  "terraform_version": "1.14.9",
+  "serial": 11,
+  "lineage": "36ff7529-a47c-5b8a-0ebf-715d40042f3c",
+  "outputs": {
+    "kubernetes_cluster_name": {
+      "value": "devops-cluster",
+      "type": "string"
+    },
+    "network_id": {
+      "value": "projects/devops-interview-poc-123/global/networks/devops-vpc",
+      "type": "string"
+    }
+  },
+  "resources": [
+    {
+      "mode": "managed",
+      "type": "google_artifact_registry_repository",
+      "name": "my_repo",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "cleanup_policies": [],
+            "cleanup_policy_dry_run": false,
+            "create_time": "2026-05-13T00:25:27.661606Z",
+            "description": "",
+            "docker_config": [],
+            "effective_labels": {
+              "goog-terraform-provisioned": "true"
+            },
+            "format": "DOCKER",
+            "id": "projects/devops-interview-poc-123/locations/us-central1/repositories/app-repo",
+            "kms_key_name": "",
+            "labels": {},
+            "location": "us-central1",
+            "maven_config": [],
+            "mode": "STANDARD_REPOSITORY",
+            "name": "app-repo",
+            "project": "devops-interview-poc-123",
+            "registry_uri": "us-central1-docker.pkg.dev/devops-interview-poc-123/app-repo",
+            "remote_repository_config": [],
+            "repository_id": "app-repo",
+            "terraform_labels": {
+              "goog-terraform-provisioned": "true"
+            },
+            "timeouts": null,
+            "update_time": "2026-05-13T00:25:27.661606Z",
+            "virtual_repository_config": [],
+            "vulnerability_scanning_config": [
+              {
+                "enablement_config": "",
+                "enablement_state": "SCANNING_DISABLED",
+                "enablement_state_reason": "API containerscanning.googleapis.com is not enabled."
+              }
+            ]
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 1,
+          "identity": {
+            "location": "us-central1",
+            "project": "devops-interview-poc-123",
+            "repository_id": "app-repo"
+          },
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19"
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_compute_firewall",
+      "name": "allow_ssh",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "allow": [
+              {
+                "ports": [
+                  "22"
+                ],
+                "protocol": "tcp"
+              }
+            ],
+            "creation_timestamp": "2026-05-12T15:26:42.540-07:00",
+            "deny": [],
+            "description": "",
+            "destination_ranges": [],
+            "direction": "INGRESS",
+            "disabled": false,
+            "enable_logging": null,
+            "id": "projects/devops-interview-poc-123/global/firewalls/allow-ssh",
+            "log_config": [],
+            "name": "allow-ssh",
+            "network": "https://www.googleapis.com/compute/v1/projects/devops-interview-poc-123/global/networks/devops-vpc",
+            "params": [],
+            "priority": 1000,
+            "project": "devops-interview-poc-123",
+            "self_link": "https://www.googleapis.com/compute/v1/projects/devops-interview-poc-123/global/firewalls/allow-ssh",
+            "source_ranges": [
+              "0.0.0.0/0"
+            ],
+            "source_service_accounts": [],
+            "source_tags": [],
+            "target_service_accounts": [],
+            "target_tags": [],
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 1,
+          "identity": {
+            "name": "allow-ssh",
+            "project": "devops-interview-poc-123"
+          },
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "google_compute_network.main_vpc"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_compute_subnetwork",
+      "name": "main_subnet",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 0,
+          "attributes": {
+            "allow_subnet_cidr_routes_overlap": false,
+            "creation_timestamp": "2026-05-12T15:26:42.647-07:00",
+            "description": "",
+            "external_ipv6_prefix": "",
+            "fingerprint": null,
+            "gateway_address": "10.0.1.1",
+            "id": "projects/devops-interview-poc-123/regions/us-central1/subnetworks/devops-vpc-subnet",
+            "internal_ipv6_prefix": "",
+            "ip_cidr_range": "10.0.1.0/24",
+            "ip_collection": "",
+            "ipv6_access_type": "",
+            "ipv6_cidr_range": "",
+            "ipv6_gce_endpoint": "",
+            "log_config": [],
+            "name": "devops-vpc-subnet",
+            "network": "https://www.googleapis.com/compute/v1/projects/devops-interview-poc-123/global/networks/devops-vpc",
+            "params": [],
+            "private_ip_google_access": true,
+            "private_ipv6_google_access": "DISABLE_GOOGLE_ACCESS",
+            "project": "devops-interview-poc-123",
+            "purpose": "PRIVATE",
+            "region": "us-central1",
+            "reserved_internal_range": "",
+            "resolve_subnet_mask": "",
+            "role": "",
+            "secondary_ip_range": [
+              {
+                "ip_cidr_range": "10.56.0.0/14",
+                "range_name": "gke-devops-cluster-pods-62d051ad",
+                "reserved_internal_range": "https://networkconnectivity.googleapis.com/v1/projects/devops-interview-poc-123/locations/global/internalRanges/gke-devops-cluster-pods-62d051ad"
+              }
+            ],
+            "self_link": "https://www.googleapis.com/compute/v1/projects/devops-interview-poc-123/regions/us-central1/subnetworks/devops-vpc-subnet",
+            "send_secondary_ip_range_if_empty": null,
+            "stack_type": "IPV4_ONLY",
+            "state": "",
+            "subnetwork_id": 3039789022607972301,
+            "timeouts": null
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 1,
+          "identity": {
+            "name": "devops-vpc-subnet",
+            "project": "devops-interview-poc-123",
+            "region": "us-central1"
+          },
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjoxMjAwMDAwMDAwMDAwLCJkZWxldGUiOjEyMDAwMDAwMDAwMDAsInVwZGF0ZSI6MTIwMDAwMDAwMDAwMH19",
+          "dependencies": [
+            "google_compute_network.main_vpc"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_container_cluster",
+      "name": "primary",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 2,
+          "attributes": {
+            "addons_config": [
+              {
+                "cloudrun_config": [],
+                "config_connector_config": [],
+                "dns_cache_config": [
+                  {
+                    "enabled": true
+                  }
+                ],
+                "gce_persistent_disk_csi_driver_config": [
+                  {
+                    "enabled": true
+                  }
+                ],
+                "gcp_filestore_csi_driver_config": [],
+                "gcs_fuse_csi_driver_config": [],
+                "gke_backup_agent_config": [],
+                "horizontal_pod_autoscaling": [],
+                "http_load_balancing": [],
+                "lustre_csi_driver_config": [],
+                "network_policy_config": [
+                  {
+                    "disabled": true
+                  }
+                ],
+                "parallelstore_csi_driver_config": [],
+                "ray_operator_config": [],
+                "slice_controller_config": [],
+                "stateful_ha_config": []
+              }
+            ],
+            "allow_net_admin": null,
+            "anonymous_authentication_config": [
+              {
+                "mode": "LIMITED"
+              }
+            ],
+            "authenticator_groups_config": [],
+            "autopilot_cluster_policy_config": [],
+            "autopilot_privileged_admission": [],
+            "binary_authorization": [
+              {
+                "enabled": false,
+                "evaluation_mode": ""
+              }
+            ],
+            "cluster_autoscaling": [
+              {
+                "auto_provisioning_defaults": [
+                  {
+                    "boot_disk_kms_key": "",
+                    "disk_size": 0,
+                    "disk_type": "",
+                    "image_type": "COS_CONTAINERD",
+                    "management": [
+                      {
+                        "auto_repair": true,
+                        "auto_upgrade": true,
+                        "upgrade_options": []
+                      }
+                    ],
+                    "min_cpu_platform": "",
+                    "oauth_scopes": [
+                      "https://www.googleapis.com/auth/devstorage.read_only",
+                      "https://www.googleapis.com/auth/logging.write",
+                      "https://www.googleapis.com/auth/monitoring",
+                      "https://www.googleapis.com/auth/service.management.readonly",
+                      "https://www.googleapis.com/auth/servicecontrol",
+                      "https://www.googleapis.com/auth/trace.append"
+                    ],
+                    "service_account": "default",
+                    "shielded_instance_config": [],
+                    "upgrade_settings": []
+                  }
+                ],
+                "auto_provisioning_locations": [],
+                "autoscaling_profile": "BALANCED",
+                "default_compute_class_enabled": false,
+                "enabled": false,
+                "resource_limits": []
+              }
+            ],
+            "cluster_ipv4_cidr": "10.56.0.0/14",
+            "confidential_nodes": [],
+            "control_plane_endpoints_config": [
+              {
+                "dns_endpoint_config": [
+                  {
+                    "allow_external_traffic": false,
+                    "enable_k8s_certs_via_dns": false,
+                    "enable_k8s_tokens_via_dns": false,
+                    "endpoint": "gke-62d051ad06b343f68dfe735354e512305bcb-618631530585.us-central1-a.gke.goog"
+                  }
+                ],
+                "ip_endpoints_config": [
+                  {
+                    "enabled": true
+                  }
+                ]
+              }
+            ],
+            "cost_management_config": [],
+            "database_encryption": [
+              {
+                "key_name": "",
+                "state": "DECRYPTED"
+              }
+            ],
+            "datapath_provider": "",
+            "default_max_pods_per_node": 110,
+            "default_snat_status": [
+              {
+                "disabled": false
+              }
+            ],
+            "deletion_protection": false,
+            "description": "",
+            "disable_l4_lb_firewall_reconciliation": false,
+            "dns_config": [],
+            "effective_labels": {
+              "goog-terraform-provisioned": "true"
+            },
+            "enable_autopilot": false,
+            "enable_cilium_clusterwide_network_policy": false,
+            "enable_fqdn_network_policy": false,
+            "enable_intranode_visibility": false,
+            "enable_k8s_beta_apis": [],
+            "enable_kubernetes_alpha": false,
+            "enable_l4_ilb_subsetting": false,
+            "enable_legacy_abac": false,
+            "enable_multi_networking": false,
+            "enable_shielded_nodes": true,
+            "enable_tpu": false,
+            "endpoint": "34.9.201.233",
+            "enterprise_config": [
+              {
+                "cluster_tier": "STANDARD",
+                "desired_tier": ""
+              }
+            ],
+            "fleet": [],
+            "gateway_api_config": [],
+            "gke_auto_upgrade_config": [],
+            "id": "projects/devops-interview-poc-123/locations/us-central1-a/clusters/devops-cluster",
+            "identity_service_config": [],
+            "in_transit_encryption_config": "",
+            "initial_node_count": 1,
+            "ip_allocation_policy": [
+              {
+                "additional_ip_ranges_config": [],
+                "additional_pod_ranges_config": [],
+                "auto_ipam_config": [],
+                "cluster_ipv4_cidr_block": "10.56.0.0/14",
+                "cluster_secondary_range_name": "gke-devops-cluster-pods-62d051ad",
+                "network_tier_config": [
+                  {
+                    "network_tier": "NETWORK_TIER_DEFAULT"
+                  }
+                ],
+                "pod_cidr_overprovision_config": [
+                  {
+                    "disabled": false
+                  }
+                ],
+                "services_ipv4_cidr_block": "34.118.224.0/20",
+                "services_secondary_range_name": "",
+                "stack_type": "IPV4"
+              }
+            ],
+            "label_fingerprint": "78cdf2f6",
+            "location": "us-central1-a",
+            "logging_config": [
+              {
+                "enable_components": [
+                  "SYSTEM_COMPONENTS",
+                  "WORKLOADS"
+                ]
+              }
+            ],
+            "logging_service": "logging.googleapis.com/kubernetes",
+            "maintenance_policy": [],
+            "master_auth": [
+              {
+                "client_certificate": "",
+                "client_certificate_config": [
+                  {
+                    "issue_client_certificate": false
+                  }
+                ],
+                "client_key": "",
+                "cluster_ca_certificate": "LS0tLS1CRUdJTiBDRVJUSUZJQ0FURS0tLS0tCk1JSUVMRENDQXBTZ0F3SUJBZ0lRSnBLWWdzTjkvc2JyempTbG1iNEdDakFOQmdrcWhraUc5dzBCQVFzRkFEQXYKTVMwd0t3WURWUVFERXlReU9XSTJORFprWXkxbU9HRTRMVFJpWkRRdE9XWXdOaTAwWm1ReU5tSTRZVFF3TXpFdwpJQmNOTWpZd05URXlNakV5TmpVMFdoZ1BNakExTmpBMU1EUXlNakkyTlRSYU1DOHhMVEFyQmdOVkJBTVRKREk1CllqWTBObVJqTFdZNFlUZ3ROR0prTkMwNVpqQTJMVFJtWkRJMllqaGhOREF6TVRDQ0FhSXdEUVlKS29aSWh2Y04KQVFFQkJRQURnZ0dQQURDQ0FZb0NnZ0dCQU5zN3krbUdwZGdTbjZNT01qUWdaeFNoWEl5MmlyT0hTb1hjb3JlTApOcVhwaytqZklGWmY5OWlCOTVDRnVlY3lFYnhXTmtTOVpMYXgwUjdDaStob3F5N2w3Znl6Mkpha3FRU1doVmgzCmNaSnRKWHVIV1RIazY4TE1MNWNmQUxHeG1pbWV0MnQ3TVN4UGVlalZndWcvb0VDSDRjOVFNL0tqdlN3Mk9MQTQKMEkrai8yQWVmNDY4SnJPZ1NjL3pGY3ZwbkxXQ29DR0tpemhQOTIwRnF0VW9SeUNiTklCUnFtSWVyYmh6Vy9UVApCcVkvSmZyT2xPZHhWMFJ1Ti9LM20wQzM5ditUeWZnc3ZJbEZaVUdIUGxkWWhyMzdjc0hsVjMvczJqaDBUVlJJCnNJZHE4R0xqTmk4QS9US1QyNW92RFIzRkJOcThqelQ1eTZvS1k1dUhMWG5VM0dpNk91RGpWVUZZUzlRRFBGcHoKVUdBK3c0QUNlY1FDZ3AvMTBYd0pZYXplNVNyRm9ZOGJCRmc2eFMySXV0WDM4dDYrS2hYMmNLZXdvMGN5anEwawowVkpYZ0xXWUlEcW1GZGJ4V0U1bll5ekdWbnVIMFhORm00WDl6NnhNd3huYi9JS2FJZ2J5OXlHOHRwbVRyWGcwCmtzbTkrZjNuRzQyek04Q0VJUzdRdFNDM3R3SURBUUFCbzBJd1FEQU9CZ05WSFE4QkFmOEVCQU1DQWdRd0R3WUQKVlIwVEFRSC9CQVV3QXdFQi96QWRCZ05WSFE0RUZnUVVTSXlKZE9oTEpvNllYQXkwMXoybkhzYkc5QWN3RFFZSgpLb1pJaHZjTkFRRUxCUUFEZ2dHQkFIcjB6d09NYWxvSW56d2sxUnFKUlZIOGRZL3JRZEVuTVU5OGFvWnlpN2NhCk8vTlAyZW5ZeHQrRHNaOW1JUmFiVGxUWEVzTUhNdDNlRDdXNFIyeXBTbTh2MHFyVDdFbkdYdU1LL2MvbFplaHEKeXp6S2tUSjAwa2dhMGJGSnIxZFRTVm9XdkNHRis5WlBRUGp6bDZUc2VPV3NrRFNKVXliRUcra2hLN3NFbzEyeApSUjRYRmRGM1dxWWlQOXlvdkVDLzhYNWFIMXhOOSszR1cyVDM3cldLVmxnNkRzb1FBSXlMWCt1b2tTamluakE0CjlLd2xJNCsyWmVpc29JQ28zVWtQZmptb1BKb2kydXpIeTFIVHo4aFJXRVVvcTlwWjc3S0FPNVkxdS9nQWI4Z2cKQ3lPUldqaGJRd0x5WkF1NngxNUZDdWZFL1cwdzQ0eHNLRDN4ZTNRMlYxemxuYXhSNHcremVvaXd1dUROWER1WQpYMURtYmpvOCtYejNrVEl3SXR3YlM5OHhtSHBOWEl1OTVPS09wTXZjSld1OGNNVFZwSDM0NmNYN2djREFna2xHCnhSdzdpZ1p6dXhQRFBuMXV5YlE5Z1BTVUxqOW5pS2lkQnhSQzVtSC9jcjdUajg0QUVtVms5TzZxVEluYkJ1d1oKa0d0ZUQrTHViU3VtV1d3V1VpNk56UT09Ci0tLS0tRU5EIENFUlRJRklDQVRFLS0tLS0K"
+              }
+            ],
+            "master_authorized_networks_config": [],
+            "master_version": "1.35.3-gke.1389000",
+            "mesh_certificates": [],
+            "min_master_version": null,
+            "monitoring_config": [
+              {
+                "advanced_datapath_observability_config": [
+                  {
+                    "enable_metrics": false,
+                    "enable_relay": false
+                  }
+                ],
+                "enable_components": [
+                  "SYSTEM_COMPONENTS",
+                  "STORAGE",
+                  "HPA",
+                  "POD",
+                  "DAEMONSET",
+                  "DEPLOYMENT",
+                  "STATEFULSET",
+                  "CADVISOR",
+                  "KUBELET",
+                  "DCGM",
+                  "JOBSET"
+                ],
+                "managed_prometheus": [
+                  {
+                    "auto_monitoring_config": [],
+                    "enabled": true
+                  }
+                ]
+              }
+            ],
+            "monitoring_service": "monitoring.googleapis.com/kubernetes",
+            "name": "devops-cluster",
+            "network": "projects/devops-interview-poc-123/global/networks/devops-vpc",
+            "network_performance_config": [],
+            "network_policy": [
+              {
+                "enabled": false,
+                "provider": "PROVIDER_UNSPECIFIED"
+              }
+            ],
+            "networking_mode": "VPC_NATIVE",
+            "node_config": [
+              {
+                "advanced_machine_features": [],
+                "boot_disk": [
+                  {
+                    "disk_type": "pd-balanced",
+                    "provisioned_iops": 0,
+                    "provisioned_throughput": 0,
+                    "size_gb": 100
+                  }
+                ],
+                "boot_disk_kms_key": "",
+                "confidential_nodes": [],
+                "containerd_config": [],
+                "disk_size_gb": 100,
+                "disk_type": "pd-balanced",
+                "effective_taints": [],
+                "enable_confidential_storage": false,
+                "ephemeral_storage_local_ssd_config": [],
+                "fast_socket": [],
+                "flex_start": false,
+                "gcfs_config": [],
+                "guest_accelerator": [],
+                "gvnic": [],
+                "host_maintenance_policy": [],
+                "image_type": "COS_CONTAINERD",
+                "kubelet_config": [
+                  {
+                    "allowed_unsafe_sysctls": [],
+                    "container_log_max_files": 0,
+                    "container_log_max_size": "",
+                    "cpu_cfs_quota": false,
+                    "cpu_cfs_quota_period": "",
+                    "cpu_manager_policy": "",
+                    "eviction_max_pod_grace_period_seconds": 0,
+                    "eviction_minimum_reclaim": [],
+                    "eviction_soft": [],
+                    "eviction_soft_grace_period": [],
+                    "image_gc_high_threshold_percent": 0,
+                    "image_gc_low_threshold_percent": 0,
+                    "image_maximum_gc_age": "",
+                    "image_minimum_gc_age": "",
+                    "insecure_kubelet_readonly_port_enabled": "FALSE",
+                    "max_parallel_image_pulls": 2,
+                    "memory_manager": [],
+                    "pod_pids_limit": 0,
+                    "single_process_oom_kill": false,
+                    "topology_manager": []
+                  }
+                ],
+                "labels": {
+                  "env": "dev"
+                },
+                "linux_node_config": [],
+                "local_nvme_ssd_block_config": [],
+                "local_ssd_count": 0,
+                "local_ssd_encryption_mode": "",
+                "logging_variant": "DEFAULT",
+                "machine_type": "e2-medium",
+                "max_run_duration": "",
+                "metadata": {
+                  "disable-legacy-endpoints": "true"
+                },
+                "min_cpu_platform": "",
+                "node_group": "",
+                "oauth_scopes": [
+                  "https://www.googleapis.com/auth/cloud-platform"
+                ],
+                "preemptible": true,
+                "reservation_affinity": [],
+                "resource_labels": {
+                  "goog-gke-node-pool-provisioning-model": "spot"
+                },
+                "resource_manager_tags": {},
+                "sandbox_config": [],
+                "secondary_boot_disks": [],
+                "service_account": "default",
+                "shielded_instance_config": [
+                  {
+                    "enable_integrity_monitoring": true,
+                    "enable_secure_boot": false
+                  }
+                ],
+                "sole_tenant_config": [],
+                "spot": false,
+                "storage_pools": [],
+                "tags": [],
+                "taint": [],
+                "windows_node_config": [
+                  {
+                    "osversion": ""
+                  }
+                ],
+                "workload_metadata_config": []
+              }
+            ],
+            "node_locations": [],
+            "node_pool": [
+              {
+                "autoscaling": [],
+                "initial_node_count": 1,
+                "instance_group_urls": [
+                  "https://www.googleapis.com/compute/v1/projects/devops-interview-poc-123/zones/us-central1-a/instanceGroupManagers/gke-devops-cluster-main-node-pool-560dd524-grp"
+                ],
+                "managed_instance_group_urls": [
+                  "https://www.googleapis.com/compute/v1/projects/devops-interview-poc-123/zones/us-central1-a/instanceGroups/gke-devops-cluster-main-node-pool-560dd524-grp"
+                ],
+                "management": [
+                  {
+                    "auto_repair": true,
+                    "auto_upgrade": true
+                  }
+                ],
+                "max_pods_per_node": 110,
+                "name": "main-node-pool",
+                "name_prefix": "",
+                "network_config": [
+                  {
+                    "accelerator_network_profile": "",
+                    "additional_node_network_configs": [],
+                    "additional_pod_network_configs": [],
+                    "create_pod_range": false,
+                    "enable_private_nodes": false,
+                    "network_performance_config": [],
+                    "pod_cidr_overprovision_config": [],
+                    "pod_ipv4_cidr_block": "10.56.0.0/14",
+                    "pod_range": "gke-devops-cluster-pods-62d051ad",
+                    "subnetwork": "projects/devops-interview-poc-123/regions/us-central1/subnetworks/devops-vpc-subnet"
+                  }
+                ],
+                "node_config": [
+                  {
+                    "advanced_machine_features": [],
+                    "boot_disk": [
+                      {
+                        "disk_type": "pd-balanced",
+                        "provisioned_iops": 0,
+                        "provisioned_throughput": 0,
+                        "size_gb": 100
+                      }
+                    ],
+                    "boot_disk_kms_key": "",
+                    "confidential_nodes": [],
+                    "containerd_config": [],
+                    "disk_size_gb": 100,
+                    "disk_type": "pd-balanced",
+                    "effective_taints": [],
+                    "enable_confidential_storage": false,
+                    "ephemeral_storage_local_ssd_config": [],
+                    "fast_socket": [],
+                    "flex_start": false,
+                    "gcfs_config": [],
+                    "guest_accelerator": [],
+                    "gvnic": [],
+                    "host_maintenance_policy": [],
+                    "image_type": "COS_CONTAINERD",
+                    "kubelet_config": [
+                      {
+                        "allowed_unsafe_sysctls": [],
+                        "container_log_max_files": 0,
+                        "container_log_max_size": "",
+                        "cpu_cfs_quota": false,
+                        "cpu_cfs_quota_period": "",
+                        "cpu_manager_policy": "",
+                        "eviction_max_pod_grace_period_seconds": 0,
+                        "eviction_minimum_reclaim": [],
+                        "eviction_soft": [],
+                        "eviction_soft_grace_period": [],
+                        "image_gc_high_threshold_percent": 0,
+                        "image_gc_low_threshold_percent": 0,
+                        "image_maximum_gc_age": "",
+                        "image_minimum_gc_age": "",
+                        "insecure_kubelet_readonly_port_enabled": "FALSE",
+                        "max_parallel_image_pulls": 2,
+                        "memory_manager": [],
+                        "pod_pids_limit": 0,
+                        "single_process_oom_kill": false,
+                        "topology_manager": []
+                      }
+                    ],
+                    "labels": {
+                      "env": "dev"
+                    },
+                    "linux_node_config": [],
+                    "local_nvme_ssd_block_config": [],
+                    "local_ssd_count": 0,
+                    "local_ssd_encryption_mode": "",
+                    "logging_variant": "DEFAULT",
+                    "machine_type": "e2-medium",
+                    "max_run_duration": "",
+                    "metadata": {
+                      "disable-legacy-endpoints": "true"
+                    },
+                    "min_cpu_platform": "",
+                    "node_group": "",
+                    "oauth_scopes": [
+                      "https://www.googleapis.com/auth/cloud-platform"
+                    ],
+                    "preemptible": true,
+                    "reservation_affinity": [],
+                    "resource_labels": {
+                      "goog-gke-node-pool-provisioning-model": "spot"
+                    },
+                    "resource_manager_tags": {},
+                    "sandbox_config": [],
+                    "secondary_boot_disks": [],
+                    "service_account": "default",
+                    "shielded_instance_config": [
+                      {
+                        "enable_integrity_monitoring": true,
+                        "enable_secure_boot": false
+                      }
+                    ],
+                    "sole_tenant_config": [],
+                    "spot": false,
+                    "storage_pools": [],
+                    "tags": [],
+                    "taint": [],
+                    "windows_node_config": [
+                      {
+                        "osversion": ""
+                      }
+                    ],
+                    "workload_metadata_config": []
+                  }
+                ],
+                "node_count": 1,
+                "node_drain_config": [],
+                "node_locations": [
+                  "us-central1-a"
+                ],
+                "placement_policy": [],
+                "queued_provisioning": [],
+                "upgrade_settings": [
+                  {
+                    "blue_green_settings": [],
+                    "max_surge": 1,
+                    "max_unavailable": 0,
+                    "strategy": "SURGE"
+                  }
+                ],
+                "version": "1.35.3-gke.1389000"
+              }
+            ],
+            "node_pool_auto_config": [
+              {
+                "linux_node_config": [],
+                "network_tags": [],
+                "node_kubelet_config": [
+                  {
+                    "insecure_kubelet_readonly_port_enabled": "FALSE"
+                  }
+                ],
+                "resource_manager_tags": {}
+              }
+            ],
+            "node_pool_defaults": [
+              {
+                "node_config_defaults": [
+                  {
+                    "containerd_config": [],
+                    "gcfs_config": [],
+                    "insecure_kubelet_readonly_port_enabled": "FALSE",
+                    "logging_variant": "DEFAULT"
+                  }
+                ]
+              }
+            ],
+            "node_version": "1.35.3-gke.1389000",
+            "notification_config": [
+              {
+                "pubsub": [
+                  {
+                    "enabled": false,
+                    "filter": [],
+                    "topic": ""
+                  }
+                ]
+              }
+            ],
+            "operation": null,
+            "pod_autoscaling": [
+              {
+                "hpa_profile": "PERFORMANCE"
+              }
+            ],
+            "private_cluster_config": [
+              {
+                "enable_private_endpoint": false,
+                "enable_private_nodes": false,
+                "master_global_access_config": [
+                  {
+                    "enabled": false
+                  }
+                ],
+                "master_ipv4_cidr_block": "",
+                "peering_name": "",
+                "private_endpoint": "10.0.1.2",
+                "private_endpoint_subnetwork": "",
+                "public_endpoint": "34.9.201.233"
+              }
+            ],
+            "private_ipv6_google_access": "",
+            "project": "devops-interview-poc-123",
+            "rbac_binding_config": [
+              {
+                "enable_insecure_binding_system_authenticated": true,
+                "enable_insecure_binding_system_unauthenticated": true
+              }
+            ],
+            "release_channel": [
+              {
+                "channel": "REGULAR"
+              }
+            ],
+            "remove_default_node_pool": true,
+            "resource_labels": {},
+            "resource_usage_export_config": [],
+            "secret_manager_config": [
+              {
+                "enabled": false,
+                "rotation_config": []
+              }
+            ],
+            "security_posture_config": [
+              {
+                "mode": "BASIC",
+                "vulnerability_mode": "VULNERABILITY_MODE_UNSPECIFIED"
+              }
+            ],
+            "self_link": "https://container.googleapis.com/v1/projects/devops-interview-poc-123/zones/us-central1-a/clusters/devops-cluster",
+            "service_external_ips_config": [
+              {
+                "enabled": false
+              }
+            ],
+            "services_ipv4_cidr": "34.118.224.0/20",
+            "subnetwork": "projects/devops-interview-poc-123/regions/us-central1/subnetworks/devops-vpc-subnet",
+            "terraform_labels": {
+              "goog-terraform-provisioned": "true"
+            },
+            "timeouts": null,
+            "tpu_ipv4_cidr_block": "",
+            "user_managed_keys_config": [],
+            "vertical_pod_autoscaling": [],
+            "workload_identity_config": []
+          },
+          "sensitive_attributes": [
+            [
+              {
+                "type": "get_attr",
+                "value": "master_auth"
+              },
+              {
+                "type": "index",
+                "value": {
+                  "value": 0,
+                  "type": "number"
+                }
+              },
+              {
+                "type": "get_attr",
+                "value": "client_key"
+              }
+            ]
+          ],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjo1NDAwMDAwMDAwMDAwLCJkZWxldGUiOjU0MDAwMDAwMDAwMDAsInJlYWQiOjU0MDAwMDAwMDAwMDAsInVwZGF0ZSI6NTQwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMiJ9",
+          "dependencies": [
+            "google_compute_network.main_vpc",
+            "google_compute_subnetwork.main_subnet"
+          ]
+        }
+      ]
+    },
+    {
+      "mode": "managed",
+      "type": "google_container_node_pool",
+      "name": "primary_nodes",
+      "provider": "provider[\"registry.terraform.io/hashicorp/google\"]",
+      "instances": [
+        {
+          "schema_version": 1,
+          "attributes": {
+            "autoscaling": [],
+            "cluster": "devops-cluster",
+            "id": "projects/devops-interview-poc-123/locations/us-central1-a/clusters/devops-cluster/nodePools/main-node-pool",
+            "initial_node_count": 1,
+            "instance_group_urls": [
+              "https://www.googleapis.com/compute/v1/projects/devops-interview-poc-123/zones/us-central1-a/instanceGroupManagers/gke-devops-cluster-main-node-pool-560dd524-grp"
+            ],
+            "location": "us-central1-a",
+            "managed_instance_group_urls": [
+              "https://www.googleapis.com/compute/v1/projects/devops-interview-poc-123/zones/us-central1-a/instanceGroups/gke-devops-cluster-main-node-pool-560dd524-grp"
+            ],
+            "management": [
+              {
+                "auto_repair": true,
+                "auto_upgrade": true
+              }
+            ],
+            "max_pods_per_node": 110,
+            "name": "main-node-pool",
+            "name_prefix": "",
+            "network_config": [
+              {
+                "accelerator_network_profile": "",
+                "additional_node_network_configs": [],
+                "additional_pod_network_configs": [],
+                "create_pod_range": false,
+                "enable_private_nodes": false,
+                "network_performance_config": [],
+                "pod_cidr_overprovision_config": [],
+                "pod_ipv4_cidr_block": "10.56.0.0/14",
+                "pod_range": "gke-devops-cluster-pods-62d051ad",
+                "subnetwork": "projects/devops-interview-poc-123/regions/us-central1/subnetworks/devops-vpc-subnet"
+              }
+            ],
+            "node_config": [
+              {
+                "advanced_machine_features": [],
+                "boot_disk": [
+                  {
+                    "disk_type": "pd-balanced",
+                    "provisioned_iops": 0,
+                    "provisioned_throughput": 0,
+                    "size_gb": 100
+                  }
+                ],
+                "boot_disk_kms_key": "",
+                "confidential_nodes": [],
+                "containerd_config": [],
+                "disk_size_gb": 100,
+                "disk_type": "pd-balanced",
+                "effective_taints": [],
+                "enable_confidential_storage": false,
+                "ephemeral_storage_local_ssd_config": [],
+                "fast_socket": [],
+                "flex_start": false,
+                "gcfs_config": [],
+                "guest_accelerator": [],
+                "gvnic": [],
+                "host_maintenance_policy": [],
+                "image_type": "COS_CONTAINERD",
+                "kubelet_config": [
+                  {
+                    "allowed_unsafe_sysctls": [],
+                    "container_log_max_files": 0,
+                    "container_log_max_size": "",
+                    "cpu_cfs_quota": false,
+                    "cpu_cfs_quota_period": "",
+                    "cpu_manager_policy": "",
+                    "eviction_max_pod_grace_period_seconds": 0,
+                    "eviction_minimum_reclaim": [],
+                    "eviction_soft": [],
+                    "eviction_soft_grace_period": [],
+                    "image_gc_high_threshold_percent": 0,
+                    "image_gc_low_threshold_percent": 0,
+                    "image_maximum_gc_age": "",
+                    "image_minimum_gc_age": "",
+                    "insecure_kubelet_readonly_port_enabled": "FALSE",
+                    "max_parallel_image_pulls": 2,
+                    "memory_manager": [],
+                    "pod_pids_limit": 0,
+                    "single_process_oom_kill": false,
+                    "topology_manager": []
+                  }
+                ],
+                "labels": {
+                  "env": "dev"
+                },
+                "linux_node_config": [],
+                "local_nvme_ssd_block_config": [],
+                "local_ssd_count": 0,
+                "local_ssd_encryption_mode": "",
+                "logging_variant": "DEFAULT",
+                "machine_type": "e2-medium",
+                "max_run_duration": "",
+                "metadata": {
+                  "disable-legacy-endpoints": "true"
+                },
+                "min_cpu_platform": "",
+                "node_group": "",
+                "oauth_scopes": [
+                  "https://www.googleapis.com/auth/cloud-platform"
+                ],
+                "preemptible": true,
+                "reservation_affinity": [],
+                "resource_labels": {
+                  "goog-gke-node-pool-provisioning-model": "spot"
+                },
+                "resource_manager_tags": {},
+                "sandbox_config": [],
+                "secondary_boot_disks": [],
+                "service_account": "default",
+                "shielded_instance_config": [
+                  {
+                    "enable_integrity_monitoring": true,
+                    "enable_secure_boot": false
+                  }
+                ],
+                "sole_tenant_config": [],
+                "spot": false,
+                "storage_pools": [],
+                "tags": [],
+                "taint": [],
+                "windows_node_config": [
+                  {
+                    "osversion": ""
+                  }
+                ],
+                "workload_metadata_config": []
+              }
+            ],
+            "node_count": 1,
+            "node_drain_config": [],
+            "node_locations": [
+              "us-central1-a"
+            ],
+            "operation": null,
+            "placement_policy": [],
+            "project": "devops-interview-poc-123",
+            "queued_provisioning": [],
+            "timeouts": null,
+            "upgrade_settings": [
+              {
+                "blue_green_settings": [],
+                "max_surge": 1,
+                "max_unavailable": 0,
+                "strategy": "SURGE"
+              }
+            ],
+            "version": "1.35.3-gke.1389000"
+          },
+          "sensitive_attributes": [],
+          "identity_schema_version": 0,
+          "private": "eyJlMmJmYjczMC1lY2FhLTExZTYtOGY4OC0zNDM2M2JjN2M0YzAiOnsiY3JlYXRlIjozNjAwMDAwMDAwMDAwLCJkZWxldGUiOjM2MDAwMDAwMDAwMDAsInVwZGF0ZSI6MzYwMDAwMDAwMDAwMH0sInNjaGVtYV92ZXJzaW9uIjoiMSJ9",
+          "dependencies": [
+            "google_compute_network.main_vpc",
+            "google_compute_subnetwork.main_subnet",
+            "google_container_cluster.primary"
+          ]
+        }
+      ]
+    }
+  ],
+  "check_results": null
+}

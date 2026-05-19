@@ -5,12 +5,6 @@ metadata:
   namespace: production
 spec:
   replicas: 1
-# AÑADE ESTO:
-  strategy:
-    type: Recreate 
-  selector:
-    matchLabels:
-      app: mi-app
   selector:
     matchLabels:
       app: mi-app
@@ -21,34 +15,12 @@ spec:
     spec:
       containers:
       - name: mi-app-container
-        # Asegúrate de que esta línea tenga el placeholder para el sed del Jenkinsfile
         image: IMAGE_PLACEHOLDER
         ports:
         - containerPort: 8080
-        # LOS PROBES VAN FUERA DE PORTS
         readinessProbe:
           httpGet:
             path: /health
             port: 8080
           initialDelaySeconds: 5
           periodSeconds: 10
-        resources:
-          requests:
-            cpu: "50m"
-            memory: "64Mi"
-          limits:
-            cpu: "100m"
-            memory: "128Mi"
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: mi-app-service
-spec:
-  type: LoadBalancer
-  selector:
-    app: mi-app-devops  # <--- Asegúrate que esto coincida con el 'labels' de tu deployment
-  ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 3000 # <--- El puerto donde corre tu app (main.py o server.js)
