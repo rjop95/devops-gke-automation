@@ -1,13 +1,12 @@
 apiVersion: v1
-   kind: Service
-   metadata:
-     name: mi-app-service
-     namespace: production
-   spec:
-     type: LoadBalancer
-     selector:
-       app: mi-app
-     ports:
-       - protocol: TCP
-         port: 80         # Puerto público (el que usarás en Postman)
-         targetPort: 8080 # El puerto interno de la app de Python
+kind: Service
+metadata:
+  name: mi-app-service
+spec:
+  type: LoadBalancer
+  selector:
+    app: mi-app
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
