@@ -1,54 +1,102 @@
+from flask import Flask, jsonify, request, has_request_context, g
+from flask_sqlalchemy import SQLAlchemy
 import logging
-import sqlite3
-from flask import Flask, jsonify, request
+import os
 
+# ==========================================
+# 1. CONFIGURACIÓN DEL FORMATEADOR SEGURO
+# ==========================================
+class SafeRequestIDFormatter(logging.Formatter):
+    def format(self, record):
+        if not hasattr(record, 'request_id'):
+            if has_request_context() and hasattr(g, 'request_id'):
+                record.request_id = g.request_id
+            else:
+                record.request_id = 'SYSTEM'
+        return super().format(record)
+
+logger = logging.getLogger()
+logger.setLevel(logging.INFO)
+
+for h in list(logger.handlers):
+    logger.removeHandler(h)
+
+handler = logging.StreamHandler()
+formatter = SafeRequestIDFormatter('[%(asctime)s] [%(request_id)s] %(levelname)s en %(module)s: %(message)s')
+handler.setFormatter(formatter)
+logger.addHandler(handler)
+
+logging.getLogger('werkzeug').handlers = []
+logging.getLogger('werkzeug').parent = logger
+
+# ==========================================
+# 2. INICIALIZACIÓN DE LA APP Y BASE DE DATOS
+# ==========================================
 app = Flask(__name__)
 
-# Logs estructurados para que aparezcan impecables en GCP Logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s [%(levelname)s] TraceID: %(request_id)s - %(message)s')
+DATABASE_URL = os.environ.get(
+    'DATABASE_URL', 
+    'postgresql://user:password@db-service:5432/mi_base_datos'
+)
 
-# Base de datos SQLite en memoria para pruebas rápidas
-def init_db():
-    conn = sqlite3.connect(':memory:')
-    cursor = conn.cursor()
-    cursor.execute('CREATE TABLE IF NOT EXISTS users (id TEXT, plan_type TEXT, status TEXT)')
-    # Insertamos un usuario VIP activo y uno inactivo para pruebas de soporte
-    cursor.execute("INSERT INTO users VALUES ('user_vip_01', 'PREMIUM', 'ACTIVE')")
-    cursor.execute("INSERT INTO users VALUES ('user_vip_02', 'PREMIUM', 'INACTIVE')")
-    conn.commit()
-    return conn
+app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db_conn = init_db()
+db = SQLAlchemy(app)
 
-@app.before_request
-def inject_trace_id():
-    # Captura el Header de Postman o genera uno por defecto
-    request.request_id = request.headers.get('X-Request-ID', 'SYSTEM-GEN')
+# ==========================================
+# 3. MODELO DE LA BASE DE DATOS (TABLA SQL)
+# ==========================================
+class Tarea(db.Model):
+    __tablename__ = 'tarea'
+    
+    id = db.Column(db.Integer, primary_key=True)
+    titulo = db.Column(db.String(100), nullable=False)
+    descripcion = db.Column(db.String(255), nullable=True)
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "titulo": self.titulo,
+            "descripcion": self.descripcion
+        }
+
+# ==========================================
+# 4. ENDPOINT DE SALUD (KUBERNETES PROBES)
+# ==========================================
 @app.route('/health', methods=['GET'])
 def health():
-    return jsonify({"status": "UP"}), 200
+    return jsonify({"status": "healthy", "database": "connected"}), 200
 
-@app.route('/api/v1/matches/<match_id>/goals', methods=['GET'])
-def get_goals(match_id):
-    # SIMULACIÓN DE ERROR L2: 504 Gateway Timeout con proveedor externo (ej. SportRadar)
-    logging.error(f"Failed to fetch live stats from external provider. Connection timeout after 5000ms.", extra={'request_id': request.request_id})
-    return jsonify({"error": "Gateway Timeout", "message": "External sports feed API not responding"}), 504
+# ==========================================
+# 5. OPERACIONES CRUD
+# ==========================================
+@app.route('/tareas', methods=['POST'])
+def crear_tarea():
+    datos = request.get_json()
+    if not datos or 'titulo' not in datos:
+        return jsonify({"error": "El campo 'titulo' es obligatorio"}), 400
+        
+    nueva_tarea = Tarea(
+        titulo=datos['titulo'],
+        descripcion=datos.get('descripcion', '')
+    )
+    db.session.add(nueva_tarea)
+    db.session.commit()
+    return jsonify({"message": "Tarea creada con éxito", "tarea": nueva_tarea.to_dict()}), 201
 
-@app.route('/api/v1/users/<user_id>/premium-content', methods=['GET'])
-def get_premium_content(user_id):
-    # SIMULACIÓN DE ERROR L2: 403 Forbidden / Data Mismatch
-    conn = sqlite3.connect(':memory:') # Para simulación aislada
-    
-    # Lógica de soporte L2 simplificada
-    if user_id == "user_vip_02":
-        logging.warning(f"User {user_id} attempted access. Authentication valid but subscription status is INACTIVE.", extra={'request_id': request.request_id})
-        return jsonify({"error": "Forbidden", "message": "Your subscription has expired. Please contact support."}), 403
-    elif user_id == "user_vip_01":
-        return jsonify({"user_id": user_id, "status": "ACTIVE", "content": "🏅 Welcome to the Olympic Live VIP Stream! 🏅"}), 200
-    else:
-        logging.error(f"User {user_id} not found in database.", extra={'request_id': request.request_id})
-        return jsonify({"error": "Not Found", "message": "User record missing."}), 404
+@app.route('/tareas', methods=['GET'])
+def obtener_tareas():
+    tareas = Tarea.query.all()
+    return jsonify([t.to_dict() for t in tareas]), 200
+
+# ==========================================
+# 6. CREACIÓN AUTOMÁTICA DE TABLAS
+# ==========================================
+with app.app_context():
+    logging.info("Verificando y creando tablas en la base de datos...")
+    db.create_all()
+    logging.info("¡Base de datos sincronizada exitosamente!")
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=8080)
