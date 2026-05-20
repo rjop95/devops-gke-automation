@@ -109,6 +109,55 @@ def obtener_usuarios():
         
     return jsonify(resultado), 200
 
+@app.route('/usuarios', methods=['POST'])
+def crear_usuario_real():
+    """Endpoint real para registrar un usuario con validaciones de datos y duplicados."""
+    # 1. Obtener los datos enviados en el cuerpo de la petición (JSON)
+    datos = request.get_json()
+
+    # Si no mandaron ningún JSON o viene vacío
+    if not datos:
+        return jsonify({"status": "error", "mensaje": "No se recibieron datos en formato JSON"}), 400
+
+    nombre = datos.get('nombre')
+    email = datos.get('email')
+
+    # 2. Validación de campos obligatorios
+    if not nombre or not email:
+        return jsonify({"status": "error", "mensaje": "Faltan campos obligatorios: 'nombre' y 'email' son requeridos"}), 400
+
+    # Validación extra: Que el email tenga una estructura mínima válida
+    if "@" not in email or "." not in email:
+        return jsonify({"status": "error", "mensaje": "El formato del correo electrónico no es válido"}), 400
+
+    try:
+        # 3. Control de Duplicados: Buscar si ya existe un usuario con ese mismo email
+        usuario_existente = Usuario.query.filter_by(email=email).first()
+        if usuario_existente:
+            return jsonify({"status": "error", "mensaje": f"El correo '{email}' ya se encuentra registrado"}), 400
+
+        # 4. Creación e inserción del nuevo usuario real
+        nuevo_usuario = Usuario(
+            nombre=nombre,
+            email=email
+        )
+        db.session.add(nuevo_usuario)
+        db.session.commit() # Guardamos los cambios de forma definitiva
+
+        return jsonify({
+            "status": "éxito",
+            "mensaje": "Usuario registrado exitosamente",
+            "usuario": {
+                "id": nuevo_usuario.id,
+                "nombre": nuevo_usuario.nombre,
+                "email": nuevo_usuario.email
+            }
+        }), 201
+
+    except Exception as e:
+        db.session.rollback() # Si algo truena con la BD, deshacemos la operación para evitar corrupción
+        return jsonify({"status": "error", "mensaje": f"Error interno en el servidor: {str(e)}"}), 500
+
 
 if __name__ == '__main__':
     # Ejecuta la aplicación escuchando en todas las interfaces para Kubernetes
