@@ -1,102 +1,115 @@
-from flask import Flask, jsonify, request, has_request_context, g
-from flask_sqlalchemy import SQLAlchemy
-import logging
-import os
+from flask import Flask, jsonify, request
+from models import db, Usuario, Producto, Suscripcion
+from datetime import datetime, timedelta
 
-# ==========================================
-# 1. CONFIGURACIÓN DEL FORMATEADOR SEGURO
-# ==========================================
-class SafeRequestIDFormatter(logging.Formatter):
-    def format(self, record):
-        if not hasattr(record, 'request_id'):
-            if has_request_context() and hasattr(g, 'request_id'):
-                record.request_id = g.request_id
-            else:
-                record.request_id = 'SYSTEM'
-        return super().format(record)
-
-logger = logging.getLogger()
-logger.setLevel(logging.INFO)
-
-for h in list(logger.handlers):
-    logger.removeHandler(h)
-
-handler = logging.StreamHandler()
-formatter = SafeRequestIDFormatter('[%(asctime)s] [%(request_id)s] %(levelname)s en %(module)s: %(message)s')
-handler.setFormatter(formatter)
-logger.addHandler(handler)
-
-logging.getLogger('werkzeug').handlers = []
-logging.getLogger('werkzeug').parent = logger
-
-# ==========================================
-# 2. INICIALIZACIÓN DE LA APP Y BASE DE DATOS
-# ==========================================
 app = Flask(__name__)
 
-DATABASE_URL = os.environ.get(
-    'DATABASE_URL', 
-    'postgresql://user:password@db-service:5432/mi_base_datos'
-)
-
-app.config['SQLALCHEMY_DATABASE_URI'] = DATABASE_URL
+# 1. Configuración de la conexión a PostgreSQL
+# Usamos las credenciales exactas de tu postgres.yaml (user, password, mi_base_datos)
+# 'db-service' es el nombre del Service de Kubernetes que resuelve la IP interna
+app.config['SQLALCHEMY_DATABASE_URI'] = 'postgresql://user:password@db-service:5432/mi_base_datos'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
-db = SQLAlchemy(app)
+# 2. Inicializar la base de datos con la aplicación Flask
+db.init_app(app)
 
-# ==========================================
-# 3. MODELO DE LA BASE DE DATOS (TABLA SQL)
-# ==========================================
-class Tarea(db.Model):
-    __tablename__ = 'tarea'
-    
-    id = db.Column(db.Integer, primary_key=True)
-    titulo = db.Column(db.String(100), nullable=False)
-    descripcion = db.Column(db.String(255), nullable=True)
 
-    def to_dict(self):
-        return {
-            "id": self.id,
-            "titulo": self.titulo,
-            "descripcion": self.descripcion
-        }
+# --- ENDPOINTS DE PRUEBA ---
 
-# ==========================================
-# 4. ENDPOINT DE SALUD (KUBERNETES PROBES)
-# ==========================================
-@app.route('/health', methods=['GET'])
-def health():
-    return jsonify({"status": "healthy", "database": "connected"}), 200
+@app.route('/')
+def home():
+    return jsonify({"mensaje": "La API de Usuarios y Suscripciones está corriendo exitosamente."}), 200
 
-# ==========================================
-# 5. OPERACIONES CRUD
-# ==========================================
-@app.route('/tareas', methods=['POST'])
-def crear_tarea():
-    datos = request.get_json()
-    if not datos or 'titulo' not in datos:
-        return jsonify({"error": "El campo 'titulo' es obligatorio"}), 400
+
+@app.route('/init-db', methods=['GET'])
+def init_db():
+    """Ruta para mapear los modelos de Python y crear las tablas físicas en Postgres."""
+    try:
+        db.create_all()
+        return jsonify({"status": "éxito", "mensaje": "Tablas creadas correctamente en PostgreSQL."}), 200
+    except Exception as e:
+        return jsonify({"status": "error", "mensaje": str(e)}), 500
+
+
+@app.route('/usuarios/test', methods=['POST'])
+def crear_usuario_test():
+    """Ruta de prueba para insertar un usuario y una suscripción simulada."""
+    try:
+        # 1. Crear un usuario de prueba único usando la hora actual para evitar duplicados de email
+        timestamp = datetime.utcnow().strftime('%H%M%S')
+        nuevo_usuario = Usuario(
+            nombre=f"Usuario Test {timestamp}",
+            email=f"test_{timestamp}@ricardojop.com"
+        )
+        db.session.add(nuevo_usuario)
+        db.session.flush() # flush() genera el ID del usuario sin cerrar la transacción
+
+        # 2. Crear un producto/plan de prueba
+        nuevo_plan = Producto(
+            nombre="Plan Premium DevOps",
+            precio=299.00,
+            descripcion="Acceso completo al clúster de producción"
+        )
+        db.session.add(nuevo_plan)
+        db.session.flush()
+
+        # 3. Asignar la suscripción amarrando las llaves foráneas
+        nueva_suscripcion = Suscripcion(
+            usuario_id=nuevo_usuario.id,
+            producto_id=nuevo_plan.id,
+            estado="activa",
+            fecha_fin=datetime.utcnow() + timedelta(days=30) # Vence en 30 días
+        )
+        db.session.add(nueva_suscripcion)
         
-    nueva_tarea = Tarea(
-        titulo=datos['titulo'],
-        descripcion=datos.get('descripcion', '')
-    )
-    db.session.add(nueva_tarea)
-    db.session.commit()
-    return jsonify({"message": "Tarea creada con éxito", "tarea": nueva_tarea.to_dict()}), 201
+        # Guardar todos los cambios de forma definitiva en Postgres
+        db.session.commit()
 
-@app.route('/tareas', methods=['GET'])
-def obtener_tareas():
-    tareas = Tarea.query.all()
-    return jsonify([t.to_dict() for t in tareas]), 200
+        return jsonify({
+            "status": "usuario_creado",
+            "usuario": {
+                "id": nuevo_usuario.id,
+                "nombre": nuevo_usuario.nombre,
+                "email": nuevo_usuario.email
+            },
+            "suscripcion_asignada": {
+                "plan": nuevo_plan.nombre,
+                "precio": float(nuevo_plan.precio),
+                "estado": nueva_suscripcion.estado
+            }
+        }), 201
 
-# ==========================================
-# 6. CREACIÓN AUTOMÁTICA DE TABLAS
-# ==========================================
-with app.app_context():
-    logging.info("Verificando y creando tablas en la base de datos...")
-    db.create_all()
-    logging.info("¡Base de datos sincronizada exitosamente!")
+    except Exception as e:
+        db.session.rollback() # Cancela la operación si algo falla para no dejar datos corruptos
+        return jsonify({"status": "error", "mensaje": str(e)}), 500
+
+
+@app.route('/usuarios', methods=['GET'])
+def obtener_usuarios():
+    """Ruta para listar todos los usuarios registrados y ver sus suscripciones."""
+    usuarios = Usuario.query.all()
+    resultado = []
+    
+    for u in usuarios:
+        # Gracias a db.relationship, podemos acceder a u.suscripciones directamente
+        sub_info = []
+        for s in u.suscripciones:
+            sub_info.append({
+                "plan_id": s.producto_id,
+                "estado": s.estado,
+                "vence": s.fecha_fin.strftime('%Y-%m-%d')
+            })
+            
+        resultado.append({
+            "id": u.id,
+            "nombre": u.nombre,
+            "email": u.email,
+            "suscripciones": sub_info
+        })
+        
+    return jsonify(resultado), 200
+
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8080)
+    # Ejecuta la aplicación escuchando en todas las interfaces para Kubernetes
+    app.run(host='0.0.0.0', port=8080, debug=True)
