@@ -25,7 +25,15 @@ spec:
           value: admin@ricardojop.com
         - name: PGADMIN_DEFAULT_PASSWORD
           value: ClaveSegura2026!
-        # Quitamos los hacks de proxy para que Flask responda directo en la raíz limpia que le mandará el Ingress
+        # Montamos el archivo de configuración en el volumen
+        volumeMounts:
+        - name: config-volume
+          mountPath: /pgadmin4/config_local.py
+          subPath: config_local.py
+      volumes:
+      - name: config-volume
+        configMap:
+          name: pgadmin-config
 ---
 apiVersion: v1
 kind: Service

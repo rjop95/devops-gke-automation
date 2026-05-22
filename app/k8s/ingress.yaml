@@ -3,24 +3,21 @@ kind: Ingress
 metadata:
   name: mi-app-ingress
   namespace: production
-  annotations:
-    # NGINX lee esto de forma nativa para procesar la expresión regular del path
-    nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   ingressClassName: nginx
   rules:
   - http:
       paths:
-      # Captura /pgadmin, /pgadmin/ y cualquier subruta como /pgadmin/login
-      - path: /pgadmin(/?.*)
-        pathType: ImplementationSpecific
+      # 1. Todo lo que vaya a /pgadmin se manda al service directo
+      - path: /pgadmin
+        pathType: Prefix
         backend:
           service:
             name: pgadmin-service
             port:
               number: 80
 
-      # Tu API de Flask (Se queda igual)
+      # 2. Tu API de Flask en la raíz
       - path: /
         pathType: Prefix
         backend:

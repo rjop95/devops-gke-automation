@@ -1,0 +1,10 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: pgadmin-config
+  namespace: production
+data:
+  config_local.py: |
+    # Configuración nativa de Flask para pgAdmin 4
+    SCRIPT_NAME = '/pgadmin'
+    PROXY_X_FORW_ENBL = True
