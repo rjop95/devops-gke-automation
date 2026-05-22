@@ -5,11 +5,14 @@ metadata:
   namespace: production
 data:
   config_distro.py: |
-    # Configuración estricta para Proxy Inverso en Kubernetes
     import os
-    
+
     # Forzar a la app a correr bajo el subpath /pgadmin
     SCRIPT_NAME = '/pgadmin'
-    
-    # Activar el ProxyFix middleware de Flask internamente
+
+    # Activar el ProxyFix middleware de Flask internamente para NGINX
     PROXY_X_FORW_ENBL = True
+
+    # Desactivar la escritura de logs en archivo para evitar el Error 13 de permisos
+    LOG_FILE = '/dev/null'
+    CONSOLE_LOG_LEVEL = 20
