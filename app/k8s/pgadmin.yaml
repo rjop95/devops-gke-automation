@@ -3,6 +3,8 @@ kind: Deployment
 metadata:
   name: pgadmin-deployment
   namespace: production
+  labels:
+    app: pgadmin
 spec:
   replicas: 1
   selector:
@@ -19,16 +21,14 @@ spec:
         ports:
         - containerPort: 80
         env:
+        # Credenciales de acceso inicial para la interfaz web
         - name: PGADMIN_DEFAULT_EMAIL
-          value: "admin@ricardojop.com"
+          value: admin@ricardojop.com
         - name: PGADMIN_DEFAULT_PASSWORD
-          value: "PasswordSeguro123"
-        - name: PGADMIN_DIR_DATA
-          value: "/tmp/pgadmin_data"
-        - name: PGADMIN_DIR_RUNTIME
-          value: "/tmp/pgadmin_runtime"
+          value: ClaveSegura2026!
+        # Prefijo lógico para que pgAdmin construya sus redirecciones y cargue los archivos estáticos (.js, .css)
         - name: PGADMIN_CONFIG_SCRIPT_NAME
-          value: "/pgadmin"
+          value: /pgadmin
 ---
 apiVersion: v1
 kind: Service
@@ -36,10 +36,10 @@ metadata:
   name: pgadmin-service
   namespace: production
 spec:
-  type: ClusterIP
   selector:
     app: pgadmin
   ports:
-    - protocol: TCP
-      port: 80
-      targetPort: 80
+  - protocol: TCP
+    port: 80
+    targetPort: 80
+  type: ClusterIP

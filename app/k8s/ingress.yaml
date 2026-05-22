@@ -5,20 +5,25 @@ metadata:
   namespace: production
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
+    # El /$2 extrae la ruta capturada en el segundo paréntesis, limpiando /pgadmin de la petición física al Pod
+    nginx.ingress.kubernetes.io/rewrite-target: /$2
 spec:
   ingressClassName: nginx
   rules:
   - http:
       paths:
-      - path: /pgadmin
-        pathType: Prefix
+      # 1. Enrutamiento para pgAdmin
+      - path: /pgadmin(/|$)(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: pgadmin-service
             port:
               number: 80
-      - path: /
-        pathType: Prefix
+
+      # 2. Enrutamiento para tu API de Flask
+      - path: /(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: mi-app-service
