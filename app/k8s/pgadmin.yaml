@@ -25,12 +25,7 @@ spec:
           value: admin@ricardojop.com
         - name: PGADMIN_DEFAULT_PASSWORD
           value: ClaveSegura2026!
-        # Mantenemos las comillas dobles anidadas intactas
-        - name: PGADMIN_CONFIG_SCRIPT_NAME
-          value: '"/pgadmin"'
-        # ¡IMPORTANTE!: Ponlo en True para que pgAdmin use el SCRIPT_NAME al reconstruir las rutas internas
-        - name: PGADMIN_CONFIG_PROXY_X_FORW_ENBL
-          value: "True"
+        # Quitamos los hacks de proxy para que Flask responda directo en la raíz limpia que le mandará el Ingress
 ---
 apiVersion: v1
 kind: Service
