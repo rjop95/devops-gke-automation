@@ -25,12 +25,15 @@ spec:
           value: admin@ricardojop.com
         - name: PGADMIN_DEFAULT_PASSWORD
           value: ClaveSegura2026!
-        # Le dice a pgAdmin que use el prefijo de forma interna
+        # 1. El nombre del script DEBE ir sin comillas internas si usamos las variables de proxy nativas
         - name: PGADMIN_CONFIG_SCRIPT_NAME
-          value: '"/pgadmin"'
-        # ESTA ES LA NUEVA CLAVE: Habilita el soporte para encabezados X-Forwarded en Werkzeug/Flask
+          value: /pgadmin
+        # 2. Habilita que pgAdmin acepte las cabeceras del Ingress (X-Forwarded-For, etc.)
         - name: PGADMIN_CONFIG_PROXY_X_FORW_ENBL
           value: "True"
+        # 3. ESTA ES LA QUE CORRIGE EL REDIRECT 302: Fuerza a Flask a respetar el SCRIPT_NAME en las respuestas redirect
+        - name: PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION
+          value: "False"
 ---
 apiVersion: v1
 kind: Service
