@@ -25,15 +25,15 @@ spec:
           value: admin@ricardojop.com
         - name: PGADMIN_DEFAULT_PASSWORD
           value: ClaveSegura2026!
-        # Montamos el archivo de configuración en el volumen
-        volumeMounts:
-        - name: config-volume
-          mountPath: /pgadmin4/config_local.py
-          subPath: config_local.py
-      volumes:
-      - name: config-volume
-        configMap:
-          name: pgadmin-config
+        # Fuerza el prefijo de la URL. Ojo a las comillas triples/anidadas para evitar el SyntaxError en Python.
+        - name: PGADMIN_CONFIG_SCRIPT_NAME
+          value: '"/pgadmin"'
+        # Obliga a pgAdmin a confiar en los encabezados que manda NGINX (X-Forwarded-For, etc.)
+        - name: PGADMIN_CONFIG_PROXY_X_FORW_ENBL
+          value: "True"
+        # Le dice a los workers de Gunicorn cuántos proxies tiene enfrente (el Ingress es 1)
+        - name: PGADMIN_CONFIG_PROXY_X_FORW_NUM
+          value: "1"
 ---
 apiVersion: v1
 kind: Service

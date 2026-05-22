@@ -8,7 +8,6 @@ spec:
   rules:
   - http:
       paths:
-      # 1. Todo lo que vaya a /pgadmin se manda al service directo
       - path: /pgadmin
         pathType: Prefix
         backend:
@@ -16,8 +15,6 @@ spec:
             name: pgadmin-service
             port:
               number: 80
-
-      # 2. Tu API de Flask en la raíz
       - path: /
         pathType: Prefix
         backend:
