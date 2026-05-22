@@ -4,26 +4,25 @@ metadata:
   name: mi-app-ingress
   namespace: production
   annotations:
-    # Mapea dinámicamente las subrutas capturadas en las reglas de abajo
-    nginx.ingress.kubernetes.io/rewrite-target: /$1
-    nginx.ingress.kubernetes.io/use-regex: "true"
+    # Cambiamos de nuevo a '/' para limpiar el prefijo antes de enviarlo al pod
+    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
   rules:
   - http:
       paths:
-      # 1. API de Flask (Dominio raíz y todas sus rutas como /usuarios, /init-db)
-      - path: /(.*)
-        pathType: ImplementationSpecific
+      # 1. API de Flask (Escucha en la raíz)
+      - path: /
+        pathType: Prefix
         backend:
           service:
             name: mi-app-service
             port:
               number: 8080
 
-      # 2. pgAdmin (Captura la ruta base /pgadmin y cualquier sub-recurso interno)
-      - path: /(pgadmin.*)
-        pathType: ImplementationSpecific
+      # 2. pgAdmin (Escucha en /pgadmin)
+      - path: /pgadmin
+        pathType: Prefix
         backend:
           service:
             name: pgadmin-service
