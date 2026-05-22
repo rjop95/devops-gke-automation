@@ -27,9 +27,8 @@ spec:
           value: "/tmp/pgadmin_data"
         - name: PGADMIN_DIR_RUNTIME
           value: "/tmp/pgadmin_runtime"
-        # --- Solución de enrutamiento para Ingress ---
         - name: PGADMIN_CONFIG_SCRIPT_NAME
-          value: '"/pgadmin"' # <--- OJO: Comilla simple, comilla doble, /pgadmin, comilla doble, comilla simple
+          value: '"/pgadmin"'
 ---
 apiVersion: v1
 kind: Service
@@ -37,7 +36,7 @@ metadata:
   name: pgadmin-service
   namespace: production
 spec:
-  type: ClusterIP      # Se mantiene interno; el Ingress se encarga de exponerlo afuera
+  type: ClusterIP
   selector:
     app: pgadmin
   ports:

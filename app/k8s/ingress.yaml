@@ -4,27 +4,29 @@ metadata:
   name: mi-app-ingress
   namespace: production
   annotations:
-    # Le avisa a los servicios qué prefijo están usando afuera en internet
-    nginx.ingress.kubernetes.io/x-forwarded-prefix: "true"
+    # 1. Limpia el prefijo antes de enviarlo al pod
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
+    nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   ingressClassName: nginx
   rules:
   - http:
       paths:
-      # 1. API de Flask (Sigue respondiendo en la raíz)
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: mi-app-service
-            port:
-              number: 8080
-
-      # 2. pgAdmin (Mantiene su prefijo /pgadmin intacto hacia el pod)
-      - path: /pgadmin
-        pathType: Prefix
+      # 1. pgAdmin (DEBE IR ARRIBA para que tenga prioridad en el match de rutas)
+      # Captura tanto '/pgadmin' como '/pgadmin/algo' y lo pasa como 'algo'
+      - path: /pgadmin/?(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: pgadmin-service
             port:
               number: 80
+
+      # 2. API de Flask (Captura el resto en la raíz)
+      - path: /(.*)
+        pathType: ImplementationSpecific
+        backend:
+          service:
+            name: mi-app-service
+            port:
+              number: 8080
