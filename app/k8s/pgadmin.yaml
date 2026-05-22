@@ -29,7 +29,7 @@ spec:
           value: "/tmp/pgadmin_runtime"
         # --- Solución de enrutamiento para Ingress ---
         - name: PGADMIN_CONFIG_SCRIPT_NAME
-          value: "/pgadmin"
+          value: '"/pgadmin"' # <--- OJO: Comilla simple, comilla doble, /pgadmin, comilla doble, comilla simple
 ---
 apiVersion: v1
 kind: Service
