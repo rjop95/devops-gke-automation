@@ -25,6 +25,14 @@ spec:
           value: admin@ricardojop.com
         - name: PGADMIN_DEFAULT_PASSWORD
           value: ClaveSegura2026!
+# --- AGREGA ESTAS TRES VARIABLES DE ENTORNO NATIVAS ---
+        - name: PGADMIN_LISTEN_ADDRESS
+          value: "0.0.0.0"
+        - name: PGADMIN_CONFIG_SCRIPT_NAME
+          value: "/pgadmin"
+        - name: PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION
+          value: "False"
+        # ------------------------------------------------------
         volumeMounts:
         - name: config-distro-volume
           mountPath: /pgadmin4/config_distro.py
