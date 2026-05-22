@@ -5,11 +5,8 @@ metadata:
   namespace: production
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
-    # Esta línea limpia la ruta antes de enviarla al pod de pgAdmin
+    # Mantenemos la reescritura limpia para entregar la raíz al pod
     nginx.ingress.kubernetes.io/rewrite-target: /$2
-    # ESTA ES LA CLAVE: Le avisa al proxy que mantenga el prefijo en las redirecciones del navegador
-    nginx.ingress.kubernetes.io/configuration-snippet: |
-      proxy_set_header X-Forwarded-Prefix "/pgadmin";
 spec:
   ingressClassName: nginx
   rules:
