@@ -28,7 +28,7 @@ spec:
           value: ClaveSegura2026!
         # Prefijo lógico para que pgAdmin construya sus redirecciones y cargue los archivos estáticos (.js, .css)
         - name: PGADMIN_CONFIG_SCRIPT_NAME
-          value: /pgadmin
+          value: '"/pgadmin"'
 ---
 apiVersion: v1
 kind: Service
