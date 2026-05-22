@@ -25,15 +25,12 @@ spec:
           value: admin@ricardojop.com
         - name: PGADMIN_DEFAULT_PASSWORD
           value: ClaveSegura2026!
-        # El juego de comillas dobles anidadas dentro de simples evita el SyntaxError
+        # Mantenemos las comillas dobles anidadas intactas
         - name: PGADMIN_CONFIG_SCRIPT_NAME
           value: '"/pgadmin"'
-        # Desactivado para que no dependa de los snippets bloqueados del Ingress
+        # ¡IMPORTANTE!: Ponlo en True para que pgAdmin use el SCRIPT_NAME al reconstruir las rutas internas
         - name: PGADMIN_CONFIG_PROXY_X_FORW_ENBL
-          value: "False"
-        # Forzamos la raíz de la aplicación web de manera nativa
-        - name: APPLICATION_ROOT
-          value: /pgadmin
+          value: "True"
 ---
 apiVersion: v1
 kind: Service
