@@ -1,10 +1,15 @@
 apiVersion: v1
 kind: ConfigMap
 metadata:
-  name: pgadmin-config
+  name: pgadmin-distro-config
   namespace: production
 data:
-  config_local.py: |
-    # Configuración nativa de Flask para pgAdmin 4
+  config_distro.py: |
+    # Configuración estricta para Proxy Inverso en Kubernetes
+    import os
+    
+    # Forzar a la app a correr bajo el subpath /pgadmin
     SCRIPT_NAME = '/pgadmin'
+    
+    # Activar el ProxyFix middleware de Flask internamente
     PROXY_X_FORW_ENBL = True
