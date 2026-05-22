@@ -25,6 +25,12 @@ spec:
           value: admin@ricardojop.com
         - name: PGADMIN_DEFAULT_PASSWORD
           value: ClaveSegura2026!
+        # --- AGREGA ESTAS DOS LÍNEAS DE ABAJO ---
+        - name: PGADMIN_CONFIG_LOG_FILE
+          value: "'/dev/null'"
+        - name: PGADMIN_CONFIG_CONSOLE_LOG_LEVEL
+          value: "20"
+        # ----------------------------------------
         volumeMounts:
         - name: config-distro-volume
           mountPath: /pgadmin4/config_distro.py
@@ -33,17 +39,3 @@ spec:
       - name: config-distro-volume
         configMap:
           name: pgadmin-distro-config
----
-apiVersion: v1
-kind: Service
-metadata:
-  name: pgadmin-service
-  namespace: production
-spec:
-  selector:
-    app: pgadmin
-  ports:
-  - protocol: TCP
-    port: 80
-    targetPort: 80
-  type: ClusterIP
