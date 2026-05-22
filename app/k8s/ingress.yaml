@@ -4,26 +4,26 @@ metadata:
   name: mi-app-ingress
   namespace: production
   annotations:
-    # Estos annotations permiten que pgAdmin y Flask convivan en la misma IP usando rutas
-    nginx.ingress.kubernetes.io/rewrite-target: /
+    # Mapea dinámicamente las subrutas capturadas en las reglas de abajo
+    nginx.ingress.kubernetes.io/rewrite-target: /$1
     nginx.ingress.kubernetes.io/use-regex: "true"
 spec:
   ingressClassName: nginx
   rules:
   - http:
       paths:
-      # 1. Ruta para tu API de Flask (Dominio raíz /)
-      - path: /
-        pathType: Prefix
+      # 1. API de Flask (Dominio raíz y todas sus rutas como /usuarios, /init-db)
+      - path: /(.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: mi-app-service
             port:
               number: 8080
-              
-      # 2. Ruta para tu pgAdmin (Basta con ir a IP/pgadmin en tu navegador)
-      - path: /pgadmin
-        pathType: Prefix
+
+      # 2. pgAdmin (Captura la ruta base /pgadmin y cualquier sub-recurso interno)
+      - path: /(pgadmin.*)
+        pathType: ImplementationSpecific
         backend:
           service:
             name: pgadmin-service
