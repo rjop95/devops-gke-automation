@@ -3,15 +3,12 @@ kind: Ingress
 metadata:
   name: mi-app-ingress
   namespace: production
-  annotations:
-    # Cambiamos la reescritura a una versión estática más predecible
-    nginx.ingress.kubernetes.io/rewrite-target: /
 spec:
   ingressClassName: nginx
   rules:
   - http:
       paths:
-      # 1. Regla explícita y prioritaria para pgAdmin
+      # 1. Regla limpia para pgAdmin (Sin rewrites)
       - path: /pgadmin
         pathType: Prefix
         backend:
@@ -20,7 +17,7 @@ spec:
             port:
               number: 80
 
-      # 2. Tu API de Flask (Atrapa la raíz y todo lo demás de forma segura)
+      # 2. Tu API de Flask
       - path: /
         pathType: Prefix
         backend:

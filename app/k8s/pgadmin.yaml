@@ -25,15 +25,12 @@ spec:
           value: admin@ricardojop.com
         - name: PGADMIN_DEFAULT_PASSWORD
           value: ClaveSegura2026!
-        # 1. El nombre del script DEBE ir sin comillas internas si usamos las variables de proxy nativas
+        # Las comillas simples por fuera protegen las dobles por dentro para Python
         - name: PGADMIN_CONFIG_SCRIPT_NAME
-          value: /pgadmin
-        # 2. Habilita que pgAdmin acepte las cabeceras del Ingress (X-Forwarded-For, etc.)
+          value: '"/pgadmin"'
+        # Permite que pgAdmin sepa que viene detrás de un proxy balanceador
         - name: PGADMIN_CONFIG_PROXY_X_FORW_ENBL
           value: "True"
-        # 3. ESTA ES LA QUE CORRIGE EL REDIRECT 302: Fuerza a Flask a respetar el SCRIPT_NAME en las respuestas redirect
-        - name: PGADMIN_CONFIG_ENHANCED_COOKIE_PROTECTION
-          value: "False"
 ---
 apiVersion: v1
 kind: Service
