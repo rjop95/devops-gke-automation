@@ -5,14 +5,17 @@ metadata:
   namespace: production
   annotations:
     nginx.ingress.kubernetes.io/use-regex: "true"
-    # El /$2 extrae la ruta capturada en el segundo paréntesis, limpiando /pgadmin de la petición física al Pod
+    # Esta línea limpia la ruta antes de enviarla al pod de pgAdmin
     nginx.ingress.kubernetes.io/rewrite-target: /$2
+    # ESTA ES LA CLAVE: Le avisa al proxy que mantenga el prefijo en las redirecciones del navegador
+    nginx.ingress.kubernetes.io/configuration-snippet: |
+      proxy_set_header X-Forwarded-Prefix "/pgadmin";
 spec:
   ingressClassName: nginx
   rules:
   - http:
       paths:
-      # 1. Enrutamiento para pgAdmin
+      # 1. pgAdmin
       - path: /pgadmin(/|$)(.*)
         pathType: ImplementationSpecific
         backend:
@@ -21,8 +24,8 @@ spec:
             port:
               number: 80
 
-      # 2. Enrutamiento para tu API de Flask
-      - path: /(.*)
+      # 2. Tu API de Flask (Atrapa la raíz pura)
+      - path: /($|.*)
         pathType: ImplementationSpecific
         backend:
           service:
