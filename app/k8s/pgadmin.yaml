@@ -28,7 +28,7 @@ spec:
         - name: PGADMIN_DIR_RUNTIME
           value: "/tmp/pgadmin_runtime"
         - name: PGADMIN_CONFIG_SCRIPT_NAME
-          value: '"/pgadmin"'
+          value: "/pgadmin"
 ---
 apiVersion: v1
 kind: Service

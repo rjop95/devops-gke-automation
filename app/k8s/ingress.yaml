@@ -4,16 +4,12 @@ metadata:
   name: mi-app-ingress
   namespace: production
   annotations:
-    # Estas tres anotaciones obligan a NGINX a pasar las rutas y cookies de sesión de forma transparente
     nginx.ingress.kubernetes.io/use-regex: "true"
-    nginx.ingress.kubernetes.io/proxy-redirect-from: "http://34.136.224.129/"
-    nginx.ingress.kubernetes.io/proxy-redirect-to: "http://34.136.224.129/pgadmin/"
 spec:
   ingressClassName: nginx
   rules:
   - http:
       paths:
-      # 1. pgAdmin (Mantiene /pgadmin intacto hacia el pod sin mutilar la ruta)
       - path: /pgadmin
         pathType: Prefix
         backend:
@@ -21,8 +17,6 @@ spec:
             name: pgadmin-service
             port:
               number: 80
-
-      # 2. API de Flask (Sigue atrapando la raíz)
       - path: /
         pathType: Prefix
         backend:
