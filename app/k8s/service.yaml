@@ -2,11 +2,12 @@ apiVersion: v1
 kind: Service
 metadata:
   name: mi-app-service
+  namespace: production  # <--- Súper importante para que vea tus pods
 spec:
-  type: LoadBalancer
+  type: ClusterIP        # <--- Cambiado de LoadBalancer a ClusterIP
   selector:
     app: mi-app
   ports:
     - protocol: TCP
-      port: 80
+      port: 8080         # <--- Lo dejamos en el 8080 para que el Ingress conecte directo al mismo puerto
       targetPort: 8080

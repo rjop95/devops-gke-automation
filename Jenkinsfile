@@ -7,7 +7,7 @@ pipeline {
         GCP_CREDS_ID   = 'gcp-creds' // El ID que pusiste en Jenkins Credentials
         CLUSTER_NAME   = 'devops-cluster'
         ZONE           = 'us-central1-a'
-        
+
         // Configuración de Docker/Artifact Registry
         IMAGE_NAME     = 'mi-app-devops'
         REGION         = 'us-central1'
@@ -18,14 +18,13 @@ pipeline {
     stages {
         stage('Checkout SCM') {
             steps {
-                // Clonar el repositorio con los nuevos cambios (docs, tests, etc.)
+                // Clonar el repositorio con los nuevos cambios
                 checkout scm
             }
         }
 
         stage('Terraform Infrastructure') {
             steps {
-                // Usamos withCredentials para que Terraform tenga acceso a la Service Account
                 withCredentials([file(credentialsId: "${GCP_CREDS_ID}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     dir('infra') {
                         sh 'terraform init'
@@ -37,8 +36,6 @@ pipeline {
 
         stage('Configuración de Acceso (L2 Fix)') {
             steps {
-                // Este es el paso que arregla el ConnectTimeoutError
-                // Refresca el archivo kubeconfig de Jenkins con la info del clúster recién creado
                 withCredentials([file(credentialsId: "${GCP_CREDS_ID}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     sh "gcloud auth activate-service-account --key-file=\$GOOGLE_APPLICATION_CREDENTIALS"
                     sh "gcloud container clusters get-credentials ${CLUSTER_NAME} --zone ${ZONE} --project ${GCP_PROJECT_ID}"
@@ -49,8 +46,6 @@ pipeline {
         stage('Ansible Setup') {
             steps {
                 dir('ansible') {
-                    // Ejecutamos el setup de K8s (Namespaces, RBAC, etc.)
-                    // Ahora que el contexto de kubectl está fresco, no dará timeout
                     sh 'ansible-playbook k8s_setup.yml'
                 }
             }
@@ -60,7 +55,7 @@ pipeline {
             steps {
                 withCredentials([file(credentialsId: "${GCP_CREDS_ID}", variable: 'GOOGLE_APPLICATION_CREDENTIALS')]) {
                     sh "cat \$GOOGLE_APPLICATION_CREDENTIALS | docker login -u _json_key --password-stdin https://${REGION}-docker.pkg.dev"
-                    
+
                     dir('app') {
                         sh "docker build -t ${REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}:${IMAGE_TAG} ."
                         sh "docker push ${REGION}-docker.pkg.dev/${GCP_PROJECT_ID}/${REPOSITORY}/${IMAGE_NAME}:${IMAGE_TAG}"
@@ -70,16 +65,24 @@ pipeline {
         }
 
         stage('Deploy to GKE') {
-    steps {
-        // 1. Modificamos el archivo usando su ruta absoluta en el workspace
-        sh "sed -i 's|IMAGE_PLACEHOLDER|us-central1-docker.pkg.dev/devops-interview-poc-123/app-repo/mi-app-devops:${BUILD_NUMBER}|g' app/k8s/deployment.yaml"
-        
-        // 2. Aplicamos de golpe toda la carpeta de Kubernetes
-        sh "kubectl apply -f app/k8s/"
-    }
-}
+            steps {
+                // 1. Crear/Actualizar el secreto de Kubernetes para la base de datos de forma segura
+                sh '''
+                    kubectl create secret generic db-secret \
+                      --from-literal=password='password' \
+                      --namespace=production \
+                      --dry-run=client -o yaml | kubectl apply -f -
+                '''
 
-stage('Post-Deployment Validation') {
+                // 2. Modificamos el archivo usando su ruta absoluta en el workspace
+                sh "sed -i 's|IMAGE_PLACEHOLDER|us-central1-docker.pkg.dev/devops-interview-poc-123/app-repo/mi-app-devops:${BUILD_NUMBER}|g' app/k8s/deployment.yaml"
+
+                // 3. Aplicamos de golpe toda la carpeta de Kubernetes
+                sh "kubectl apply -f app/k8s/"
+            }
+        }
+
+        stage('Post-Deployment Validation') {
             steps {
                 script {
                     try {
@@ -107,4 +110,4 @@ stage('Post-Deployment Validation') {
             echo "❌ Fallo en el pipeline. Iniciando protocolos de revisión de logs."
         }
     }
-} // AQUÍ es donde suele faltar la última llave
+}

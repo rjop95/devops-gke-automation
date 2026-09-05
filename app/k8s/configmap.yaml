@@ -5,6 +5,6 @@ metadata:
   namespace: production
 data:
   config_distro.py: |
-    # Desactivar la escritura de logs en archivo para evitar el Error 13 de permisos
     LOG_FILE = '/dev/null'
     CONSOLE_LOG_LEVEL = 20
+    SCRIPT_NAME = '/pgadmin'

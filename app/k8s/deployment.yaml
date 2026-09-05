@@ -18,6 +18,20 @@ spec:
         image: IMAGE_PLACEHOLDER
         ports:
         - containerPort: 8080
+        env:
+        - name: DB_HOST
+          value: "db-service"
+        - name: DB_PORT
+          value: "5432"
+        - name: DB_NAME
+          value: "mi_base_datos"
+        - name: DB_USER
+          value: "user"
+        - name: DB_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: db-secret
+              key: password
         readinessProbe:
           httpGet:
             path: /

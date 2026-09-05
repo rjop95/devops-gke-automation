@@ -5,21 +5,10 @@ metadata:
   namespace: production
   annotations:
     kubernetes.io/ingress.class: "nginx"
-    # Si tienes la anotación de rewrite-target aquí, bórrala o coméntala, 
-    # ya que altera las rutas globales y rompe los subpaths fijos.
 spec:
   rules:
   - http:
       paths:
-      # Si tienes tu app principal en la raíz, se queda igual:
-      - path: /
-        pathType: Prefix
-        backend:
-          service:
-            name: tu-app-principal-service
-            port:
-              number: 80
-      # --- CONFIGURACIÓN PARA PGADMIN ---
       - path: /pgadmin
         pathType: Prefix
         backend:
